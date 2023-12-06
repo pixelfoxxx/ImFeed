@@ -43,12 +43,12 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		C344A4602B0D5A53005E054B /* Profile */ = {
+		C344A4602B0D5A53005E054B /* ProfileView */ = {
 			isa = PBXGroup;
 			children = (
 				C344A4612B0D5A6D005E054B /* ProfileViewController.swift */,
 			);
-			path = Profile;
+			path = ProfileView;
 			sourceTree = "<group>";
 		};
 		C344A4652B12B463005E054B /* SingleImageView */ = {
@@ -59,14 +59,21 @@
 			path = SingleImageView;
 			sourceTree = "<group>";
 		};
-		C372D0C32B02B2C100AE89E2 /* ImagesList */ = {
+		C372D0C32B02B2C100AE89E2 /* ImagesListView */ = {
 			isa = PBXGroup;
 			children = (
 				C3DF84912AFD618800298A89 /* ImagesListViewController.swift */,
-				C372D0C42B02B2D700AE89E2 /* ImagesListCell.swift */,
 				C3DF84932AFD618800298A89 /* Main.storyboard */,
 			);
-			path = ImagesList;
+			path = ImagesListView;
+			sourceTree = "<group>";
+		};
+		C38D499E2B210F5800E99ED2 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				C372D0C42B02B2D700AE89E2 /* ImagesListCell.swift */,
+			);
+			path = Cells;
 			sourceTree = "<group>";
 		};
 		C3DF84812AFD618800298A89 = {
@@ -88,10 +95,11 @@
 		C3DF848C2AFD618800298A89 /* ImFeed */ = {
 			isa = PBXGroup;
 			children = (
+				C38D499E2B210F5800E99ED2 /* Cells */,
 				C3ED62202B02CABA003DB42B /* Helpers */,
-				C372D0C32B02B2C100AE89E2 /* ImagesList */,
+				C372D0C32B02B2C100AE89E2 /* ImagesListView */,
 				C344A4652B12B463005E054B /* SingleImageView */,
-				C344A4602B0D5A53005E054B /* Profile */,
+				C344A4602B0D5A53005E054B /* ProfileView */,
 				C3DF848D2AFD618800298A89 /* AppDelegate.swift */,
 				C3DF848F2AFD618800298A89 /* SceneDelegate.swift */,
 				C3DF849B2AFD618900298A89 /* Info.plist */,
