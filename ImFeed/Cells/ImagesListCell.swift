@@ -11,39 +11,48 @@ final class ImagesListCell: UITableViewCell {
     @IBOutlet weak var dateLabel: UILabel!
 
     // MARK: - Gradient
+    
+    private lazy var gradientView: UIView = {
+        let view = UIView()
+        view.backgroundColor = .clear
+        return view
+    }()
+    
     private var gradientLayer: CAGradientLayer?
+    
+    private func addGradient() {
+        let gradientLayer = CAGradientLayer()
+        let colorTop = UIColor.ypGradient.withAlphaComponent(0).cgColor
+        let colorBottom = UIColor.ypGradient.withAlphaComponent(0.2).cgColor
+        gradientLayer.colors = [colorTop, colorBottom]
+        gradientLayer.locations = [0.7, 1.0]
+        gradientView.layer.insertSublayer(gradientLayer, at: 0)
+        self.gradientLayer = gradientLayer
+    }
+    
+    private func configureGradientView() {
+        gradientView.translatesAutoresizingMaskIntoConstraints = false
+        contentView.addSubview(gradientView)
+        
+        NSLayoutConstraint.activate([
+            gradientView.topAnchor.constraint(equalTo: cellImage.topAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: cellImage.trailingAnchor),
+            gradientView.leadingAnchor.constraint(equalTo: cellImage.leadingAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: cellImage.bottomAnchor)
+        
+        ])
+        
+        addGradient()
+    }
 
     // MARK: - Lifecycle
     override func layoutSubviews() {
         super.layoutSubviews()
-        addGradientToImageBottom()
+        gradientLayer?.frame = gradientView.bounds
     }
-
-    // MARK: - Gradient Layer
-    private func addGradientToImageBottom() {
-        gradientLayer?.removeFromSuperlayer()
-
-        gradientLayer = CAGradientLayer()
-        configureGradientLayerFrame()
-        configureGradientLayerColors()
-        configureGradientLayerOpacity()
-
-        if let gradientLayer = gradientLayer {
-            cellImage.layer.addSublayer(gradientLayer)
-        }
-    }
-
-    private func configureGradientLayerFrame() {
-        let gradientFrame = CGRect(x: 0, y: cellImage.bounds.height * 0.7, width: cellImage.bounds.width, height: cellImage.bounds.height * 0.3)
-        gradientLayer?.frame = gradientFrame
-    }
-
-    private func configureGradientLayerColors() {
-        gradientLayer?.colors = [UIColor.clear.cgColor, UIColor.gray.cgColor]
-        gradientLayer?.locations = [0.0, 1.0]
-    }
-
-    private func configureGradientLayerOpacity() {
-        gradientLayer?.opacity = 0.20
+    
+    override func awakeFromNib() {
+        super.awakeFromNib()
+        configureGradientView()
     }
 }
