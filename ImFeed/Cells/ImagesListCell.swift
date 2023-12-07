@@ -23,7 +23,7 @@ final class ImagesListCell: UITableViewCell {
     private func addGradient() {
         let gradientLayer = CAGradientLayer()
         let colorTop = UIColor.ypGradient.withAlphaComponent(0).cgColor
-        let colorBottom = UIColor.ypGradient.withAlphaComponent(0.2).cgColor
+        let colorBottom = UIColor.ypWhite.withAlphaComponent(0.2).cgColor
         gradientLayer.colors = [colorTop, colorBottom]
         gradientLayer.locations = [0.7, 1.0]
         gradientView.layer.insertSublayer(gradientLayer, at: 0)
@@ -32,7 +32,8 @@ final class ImagesListCell: UITableViewCell {
     
     private func configureGradientView() {
         gradientView.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(gradientView)
+        cellImage.addSubview(gradientView)
+        cellImage.bringSubviewToFront(gradientView)
         
         NSLayoutConstraint.activate([
             gradientView.topAnchor.constraint(equalTo: cellImage.topAnchor),
