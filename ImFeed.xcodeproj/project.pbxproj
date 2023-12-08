@@ -112,18 +112,18 @@
 		C3DF848C2AFD618800298A89 /* ImFeed */ = {
 			isa = PBXGroup;
 			children = (
+				C3DF84962AFD618900298A89 /* Assets.xcassets */,
+				C3DF849B2AFD618900298A89 /* Info.plist */,
+				C3DF848D2AFD618800298A89 /* AppDelegate.swift */,
+				C3DF848F2AFD618800298A89 /* SceneDelegate.swift */,
 				C3DEBF432B23C48500F16266 /* Auth */,
 				C38D499E2B210F5800E99ED2 /* Cells */,
 				C3ED62202B02CABA003DB42B /* Helpers */,
 				C372D0C32B02B2C100AE89E2 /* ImagesListView */,
-				C344A4652B12B463005E054B /* SingleImageView */,
-				C344A4602B0D5A53005E054B /* ProfileView */,
-				C3DF848D2AFD618800298A89 /* AppDelegate.swift */,
-				C3DF848F2AFD618800298A89 /* SceneDelegate.swift */,
-				C3DF849B2AFD618900298A89 /* Info.plist */,
-				C3DF84962AFD618900298A89 /* Assets.xcassets */,
 				C3DF84982AFD618900298A89 /* LaunchScreen.storyboard */,
 				C3DF84932AFD618800298A89 /* Main.storyboard */,
+				C344A4602B0D5A53005E054B /* ProfileView */,
+				C344A4652B12B463005E054B /* SingleImageView */,
 			);
 			path = ImFeed;
 			sourceTree = "<group>";
