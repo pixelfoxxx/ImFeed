@@ -47,6 +47,7 @@ final class ImagesListCell: UITableViewCell {
     }
 
     // MARK: - Lifecycle
+    
     override func layoutSubviews() {
         super.layoutSubviews()
         gradientLayer?.frame = gradientView.bounds

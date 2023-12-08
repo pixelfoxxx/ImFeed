@@ -3,7 +3,6 @@ import UIKit
 final class SingleImageViewController: UIViewController {
     
     //MARK: - Properties
-    
     var image: UIImage? {
         didSet {
             guard isViewLoaded else { return }
@@ -13,12 +12,10 @@ final class SingleImageViewController: UIViewController {
     }
     
     //MARK: - IB Outlets
-    
     @IBOutlet private weak var scrollView: UIScrollView!
     @IBOutlet private weak var imageView: UIImageView!
     
     //MARK: - Lifecycle
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         imageView.image = image
@@ -29,7 +26,6 @@ final class SingleImageViewController: UIViewController {
     }
     
     //MARK: - IB Actions
-    
     @IBAction private func didTapShareButton(_ sender: UIButton) {
         if let image = image {
             let share = UIActivityViewController(
@@ -46,7 +42,6 @@ final class SingleImageViewController: UIViewController {
     }
     
     //MARK: - Private Methods
-    
     private func rescaleAndCenterImageInScrollView(image: UIImage?) {
         guard let image = image else {
             print("No image to scale")
@@ -71,7 +66,6 @@ final class SingleImageViewController: UIViewController {
 }
 
 //MARK: - UIScrollViewDelegate
-
 extension SingleImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView

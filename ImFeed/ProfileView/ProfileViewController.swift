@@ -3,7 +3,6 @@ import UIKit
 final class ProfileViewController: UIViewController {
     
     //MARK: - Properties
-    
     let userNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .ypWhite
@@ -45,12 +44,14 @@ final class ProfileViewController: UIViewController {
         return button
     }()
     
+    //MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
     }
     
+    //MARK: - Private methods
     private func configureSubviews() {
         view.addSubview(userNameLabel)
         view.addSubview(userLoginLabel)
