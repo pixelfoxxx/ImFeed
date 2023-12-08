@@ -8,11 +8,6 @@
 import UIKit
 import WebKit
 
-protocol WebViewControllerDelegate: AnyObject {
-    func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String)
-    func webViewViewControllerDidCancel(_ vc: WebViewViewController)
-}
-
 final class WebViewViewController: UIViewController {
     //MARK: - Properties
     @IBOutlet private var webView: WKWebView!
