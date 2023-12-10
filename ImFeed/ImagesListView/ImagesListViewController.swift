@@ -1,27 +1,24 @@
 import UIKit
 
 final class ImagesListViewController: UIViewController {
-    
     // MARK: - Properties
     @IBOutlet private var tableView: UITableView!
     private let photosNames: [String] = (0..<20).map { "\($0)" }
     private let ShowSingleImageSegueIdentifier = "ShowSingleImage"
-    
-    //MARK: - Date Formatter
+    // MARK: - Date Formatter
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .none
         return formatter
     }()
-    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureTableView()
     }
     
-    //MARK: - Single Image Configuration
+    // MARK: - Single Image Configuration
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == ShowSingleImageSegueIdentifier {
             let viewController = segue.destination as! SingleImageViewController
@@ -51,16 +48,13 @@ extension ImagesListViewController: UITableViewDataSource {
         guard let cell = tableView.dequeueReusableCell(withIdentifier: ImagesListCell.reuseIdentifier, for: indexPath) as? ImagesListCell else {
             return UITableViewCell()
         }
-        
         configureCell(cell, for: indexPath)
         return cell
     }
-    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
         guard let image = UIImage(named: photosNames[indexPath.row]) else {
             return 0
         }
-        
         let imageInsets = UIEdgeInsets(top: 4, left: 16, bottom: 4, right: 16)
         let imageViewWidth = tableView.bounds.width - imageInsets.left - imageInsets.right
         let imageWidth = image.size.width
@@ -82,10 +76,8 @@ extension ImagesListViewController {
         guard let image = UIImage(named: photosNames[indexPath.row]) else {
             return
         }
-        
         cell.cellImage.image = image
         cell.dateLabel.text = dateFormatter.string(from: Date())
-        
         let isLiked = indexPath.row % 2 == 0
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         cell.likeButton.setImage(likeImage, for: .normal)

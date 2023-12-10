@@ -112,8 +112,6 @@
 		C3DF848C2AFD618800298A89 /* ImFeed */ = {
 			isa = PBXGroup;
 			children = (
-				C3DF84962AFD618900298A89 /* Assets.xcassets */,
-				C3DF849B2AFD618900298A89 /* Info.plist */,
 				C3DF848D2AFD618800298A89 /* AppDelegate.swift */,
 				C3DF848F2AFD618800298A89 /* SceneDelegate.swift */,
 				C3DEBF432B23C48500F16266 /* Auth */,
@@ -122,6 +120,8 @@
 				C372D0C32B02B2C100AE89E2 /* ImagesListView */,
 				C3DF84982AFD618900298A89 /* LaunchScreen.storyboard */,
 				C3DF84932AFD618800298A89 /* Main.storyboard */,
+				C3DF84962AFD618900298A89 /* Assets.xcassets */,
+				C3DF849B2AFD618900298A89 /* Info.plist */,
 				C344A4602B0D5A53005E054B /* ProfileView */,
 				C344A4652B12B463005E054B /* SingleImageView */,
 			);
@@ -150,8 +150,11 @@
 			buildRules = (
 			);
 			dependencies = (
+				C358CC722B250D0700735984 /* PBXTargetDependency */,
 			);
 			name = ImFeed;
+			packageProductDependencies = (
+			);
 			productName = ImFeed;
 			productReference = C3DF848A2AFD618800298A89 /* ImFeed.app */;
 			productType = "com.apple.product-type.application";
@@ -180,6 +183,8 @@
 				Base,
 			);
 			mainGroup = C3DF84812AFD618800298A89;
+			packageReferences = (
+			);
 			productRefGroup = C3DF848B2AFD618800298A89 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -221,6 +226,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		C358CC722B250D0700735984 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			productRef = C358CC712B250D0700735984 /* SwiftLintPlugin */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		C3DF84932AFD618800298A89 /* Main.storyboard */ = {
@@ -294,7 +306,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -351,7 +363,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -445,6 +457,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		C3AE2C482B250A6D00E96323 /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/realm/SwiftLint";
+			requirement = {
+				kind = exactVersion;
+				version = 0.49.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		C358CC712B250D0700735984 /* SwiftLintPlugin */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = C3AE2C482B250A6D00E96323 /* XCRemoteSwiftPackageReference "SwiftLint" */;
+			productName = "plugin:SwiftLintPlugin";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = C3DF84822AFD618800298A89 /* Project object */;
 }

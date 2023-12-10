@@ -8,13 +8,11 @@
 import UIKit
 
 class AuthViewController: UIViewController {
-    
-    //MARK: - Properties
-    let ShowWebViewSegueIdentifier = "ShowWebView"
-    
-    //MARK: - Navigation
+    // MARK: - Properties
+    let showWebViewSegueIdentifier = "ShowWebView"
+    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == ShowWebViewSegueIdentifier,
+        if segue.identifier == showWebViewSegueIdentifier,
            let webViewViewController = segue.destination as? WebViewViewController {
             webViewViewController.delegate = self
         } else {
@@ -23,12 +21,11 @@ class AuthViewController: UIViewController {
     }
 }
 
-//MARK: - WebViewControllerDelegate
+// MARK: - WebViewControllerDelegate
 extension AuthViewController: WebViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-        //TODO: Process code
+        // TODO: Process code
     }
-    
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
         dismiss(animated: true)
     }
