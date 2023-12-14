@@ -13,7 +13,7 @@
         <!--Auth View Controller-->
         <scene sceneID="anB-Xt-zRg">
             <objects>
-                <viewController id="K3Q-AK-2op" customClass="AuthViewController" customModule="ImFeed" customModuleProvider="target" sceneMemberID="viewController">
+                <viewController id="K3Q-AK-2op" customClass="OAuthViewController" customModule="ImFeed" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="nX5-nI-DbI">
                         <rect key="frame" x="0.0" y="0.0" width="393" height="852"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
