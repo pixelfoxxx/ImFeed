@@ -9,7 +9,7 @@ import Foundation
 
 final class OAuth2TokenStorage {
     private let defaults = UserDefaults.standard
-    private let tokenKey = "https://unsplash.com/oauth/token"
+    private let tokenKey = "BearerToken"
     
     var token: String? {
         get {
@@ -18,5 +18,9 @@ final class OAuth2TokenStorage {
         set {
             defaults.set(newValue, forKey: tokenKey)
         }
+    }
+    
+    func hasToken() -> Bool {
+        return UserDefaults.standard.object(forKey: tokenKey) != nil
     }
 }

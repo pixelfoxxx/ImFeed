@@ -11,7 +11,7 @@ final class OAuthViewController: UIViewController {
     // MARK: - Properties
     let showWebViewSegueIdentifier = "ShowWebView"
     
-    let oauthService = OAuth2Service()
+    let oauthService = Auth2Service()
     let tokenStorage = OAuth2TokenStorage()
     
     // MARK: - Navigation
@@ -36,7 +36,6 @@ extension OAuthViewController: WebViewControllerDelegate {
                 print("Access Token Stored: \(token)")
             case .failure(let error):
                 print("Authentication error: \(error.localizedDescription)")
-                print("Token Stored failed")
             }
         }
     }
