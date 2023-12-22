@@ -7,12 +7,18 @@
 
 import UIKit
 
+protocol AuthViewControllerDelegate: AnyObject {
+    func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String)
+}
+
 final class OAuthViewController: UIViewController {
     // MARK: - Properties
-    let showWebViewSegueIdentifier = "ShowWebView"
+    private let showWebViewSegueIdentifier = "ShowWebView"
     
     let oauthService = Auth2Service()
     let tokenStorage = OAuth2TokenStorage()
+    
+    weak var delegate: AuthViewControllerDelegate?
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
@@ -28,16 +34,7 @@ final class OAuthViewController: UIViewController {
 // MARK: - WebViewControllerDelegate
 extension OAuthViewController: WebViewControllerDelegate {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String) {
-    
-        oauthService.fetchAuthToken(with: code) { [weak self] result in
-            switch result {
-            case .success(let token):
-                self?.tokenStorage.token = token
-                print("Access Token Stored: \(token)")
-            case .failure(let error):
-                print("Authentication error: \(error.localizedDescription)")
-            }
-        }
+        delegate?.authViewController(self, didAuthenticateWithCode: code)
     }
     
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {

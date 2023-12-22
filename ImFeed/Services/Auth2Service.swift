@@ -22,11 +22,12 @@ final class Auth2Service {
         if let url = urlComponents?.url {
             var request = URLRequest(url: url)
             request.httpMethod = "POST"
+            print("Here is the request: \(request)")
             
             URLSession.shared.dataTask(with: request) { data, response, error in
                 guard let data = data,
                       let response = response as? HTTPURLResponse,
-                      200...299 ~= response.statusCode,
+                      200...300 ~= response.statusCode,
                       error == nil else {
                     DispatchQueue.main.async {
                         completion(.failure(error ?? URLError(.badServerResponse)))

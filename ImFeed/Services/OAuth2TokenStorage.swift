@@ -9,15 +9,11 @@ import Foundation
 
 final class OAuth2TokenStorage {
     private let defaults = UserDefaults.standard
-    private let tokenKey = "BearerToken"
+    private let tokenKey = "OAuth2Token"
     
     var token: String? {
-        get {
-            return defaults.string(forKey: tokenKey)
-        }
-        set {
-            defaults.set(newValue, forKey: tokenKey)
-        }
+        get { defaults.string(forKey: tokenKey) }
+        set { defaults.set(newValue, forKey: tokenKey) }
     }
     
     func hasToken() -> Bool {
