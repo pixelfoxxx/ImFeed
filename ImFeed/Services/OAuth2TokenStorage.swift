@@ -8,6 +8,8 @@
 import Foundation
 
 final class OAuth2TokenStorage {
+    static let shared = OAuth2TokenStorage()
+    
     private let defaults = UserDefaults.standard
     private let tokenKey = "OAuth2Token"
     
@@ -17,6 +19,6 @@ final class OAuth2TokenStorage {
     }
     
     func hasToken() -> Bool {
-        return UserDefaults.standard.object(forKey: tokenKey) != nil
+        return defaults.object(forKey: tokenKey) != nil
     }
 }
