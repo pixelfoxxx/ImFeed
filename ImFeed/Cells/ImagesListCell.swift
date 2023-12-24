@@ -1,23 +1,18 @@
 import UIKit
 
 final class ImagesListCell: UITableViewCell {
-
     // MARK: - Cell Identifier
     static let reuseIdentifier = "ImagesListCell"
-
     // MARK: - IBOutlets
     @IBOutlet weak var cellImage: UIImageView!
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var dateLabel: UILabel!
-
     // MARK: - Gradient
-    
     private lazy var gradientView: UIView = {
         let view = UIView()
         view.backgroundColor = .clear
         return view
     }()
-    
     private var gradientLayer: CAGradientLayer?
     
     private func addGradient() {
@@ -51,7 +46,6 @@ final class ImagesListCell: UITableViewCell {
         super.layoutSubviews()
         gradientLayer?.frame = gradientView.bounds
     }
-    
     override func awakeFromNib() {
         super.awakeFromNib()
         configureGradientView()
