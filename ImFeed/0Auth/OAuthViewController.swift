@@ -15,7 +15,7 @@ final class OAuthViewController: UIViewController {
     // MARK: - Properties
     private let showWebViewSegueIdentifier = "ShowWebView"
     
-    let oauthService = Auth2Service()
+    let oauthService = OAuth2Service()
     let tokenStorage = OAuth2TokenStorage()
     
     weak var delegate: AuthViewControllerDelegate?

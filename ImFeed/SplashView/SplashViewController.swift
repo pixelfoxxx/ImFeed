@@ -6,18 +6,22 @@
 //
 
 import UIKit
+import ProgressHUD
 
 class SplashViewController: UIViewController {
     
     // MARK: - Properties
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthScreen"
-    private let oauthService = Auth2Service()
+    private let oauthService = OAuth2Service()
     private let tokenStorage = OAuth2TokenStorage()
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         .lightContent
     }
     
+    // MARK: - IB Outlets
+    @IBOutlet private weak var splashScreenLogo: UIImageView!
+
     // MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -65,6 +69,7 @@ class SplashViewController: UIViewController {
 // MARK: - AuthViewControllerDelegate
 extension SplashViewController: AuthViewControllerDelegate {
     func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String) {
+        UIBlockingProgressHUD.show()
         dismiss(animated: true) { [weak self] in
             self?.fetchAuthToken(code)
         }
@@ -74,10 +79,15 @@ extension SplashViewController: AuthViewControllerDelegate {
         oauthService.fetchAuthToken(with: code) { [weak self] result in
             switch result {
             case .success:
+                self?.splashScreenLogo.isHidden = true
                 self?.switchToTabBarController()
+                UIBlockingProgressHUD.dismiss()
             case .failure:
-                // TODO: - Handle Authorization error
-                print("Authorization error")
+                print("Authorization error") // TODO: - Handle Authorization error
+                self?.splashScreenLogo.isHidden = true
+                UIBlockingProgressHUD.dismiss()
+               
+                
             }
         }
     }

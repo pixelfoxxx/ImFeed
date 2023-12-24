@@ -1,5 +1,5 @@
 //
-//  Auth2Service.swift
+//  OAuth2Service.swift
 //  ImFeed
 //
 //  Created by Юрий Клеймёнов on 13/12/2023.
@@ -7,11 +7,12 @@
 
 import Foundation
 
-// MARK: - Auth2Service
-final class Auth2Service {
-    
+// MARK: - OAuth2Service
+final class OAuth2Service {
+ 
     // MARK: - Public Methods
     func fetchAuthToken(with code: String, completion: @escaping (Result<String, Error>) -> Void) {
+        
         guard let url = buildRequestURL(with: code) else {
             completion(.failure(URLError(.badURL)))
             return
@@ -19,7 +20,7 @@ final class Auth2Service {
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
-        print("Here is the request: \(request)")
+        print("Auth request: \(request)")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
             self.handleResponse(data: data, response: response, error: error, completion: completion)

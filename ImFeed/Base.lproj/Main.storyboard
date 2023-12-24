@@ -359,6 +359,7 @@
                         </constraints>
                     </view>
                     <connections>
+                        <outlet property="splashScreenLogo" destination="Koq-a8-eVh" id="gnx-27-tdh"/>
                         <segue destination="wX2-qi-iLz" kind="presentation" identifier="ShowAuthScreen" modalPresentationStyle="fullScreen" id="M4P-By-GSE"/>
                     </connections>
                 </viewController>
@@ -369,6 +370,7 @@
         <!--Navigation Controller-->
         <scene sceneID="Rgn-mH-DUL">
             <objects>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="qZd-0R-X8w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="wX2-qi-iLz" sceneMemberID="viewController">
                     <toolbarItems/>
                     <navigationBar key="navigationBar" contentMode="scaleToFill" id="2uJ-QC-74k">
@@ -380,7 +382,6 @@
                         <segue destination="K3Q-AK-2op" kind="relationship" relationship="rootViewController" id="FS1-bw-xzP"/>
                     </connections>
                 </navigationController>
-                <placeholder placeholderIdentifier="IBFirstResponder" id="qZd-0R-X8w" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="182" y="1354"/>
         </scene>
