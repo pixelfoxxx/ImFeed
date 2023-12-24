@@ -57,17 +57,16 @@ final class ProfileViewController: UIViewController {
         configureConstraints()
         startLoadingAnimation()
         fetchUserProfile()
-        updateAvatar()
         addProfileImageObserver()
     }
     
     // MARK: - Private methods
     private func updateAvatar() {
         guard
-            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let profileImageURL = profileImageService.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        avatarImageView.kf.setImage(with: url)
+        avatarImageView.kf.setImage(with: url, placeholder: UIImage(named: "placeholder.jpeg"))
     }
     
     private func startLoadingAnimation() {
@@ -168,7 +167,7 @@ final class ProfileViewController: UIViewController {
     }
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
-        guard let token = OAuth2TokenStorage.shared.token else {
+        guard let token = tokenStorage.token else {
             print("Error: No token available")
             return
         }
@@ -177,12 +176,27 @@ final class ProfileViewController: UIViewController {
                 switch result {
                 case .success(let profile):
                     self?.updateUIWithProfile(profile)
+                    self?.fetchProfileImageURL(for: profile.username)
                 case .failure(let error):
                     print("Error fetching profile: \(error)")
                 }
             }
         }
     }
+    
+    private func fetchProfileImageURL(for username: String) {
+        profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let imageURL):
+                    self?.updateAvatar()
+                case .failure(let error):
+                    print("Ошибка при получении URL изображения профиля: \(error)")
+                }
+            }
+        }
+    }
+    
     // MARK: - Notification Center Observer
     private func addProfileImageObserver() {
         profileImageServiceObserver = NotificationCenter.default
