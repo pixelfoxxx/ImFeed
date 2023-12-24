@@ -2,13 +2,15 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
     
+    let profileService = ProfileService.shared
+    
     //MARK: - Properties
     let userNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         label.numberOfLines = 0
-        label.text = "Username" // Mock
+        label.text = "Username"
         return label
     }()
     
@@ -17,7 +19,7 @@ final class ProfileViewController: UIViewController {
         label.textColor = .ypGray
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.numberOfLines = 0
-        label.text = "Login" // Mock
+        label.text = "Login"
         return label
     }()
     
@@ -26,7 +28,7 @@ final class ProfileViewController: UIViewController {
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.numberOfLines = 0
-        label.text = "Description" // Mock
+        label.text = "Description" 
         return label
     }()
     
@@ -49,9 +51,36 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
+        fetchUserProfile()
     }
     
     //MARK: - Private methods
+    
+    private func fetchUserProfile() {
+        
+        guard let token = OAuth2TokenStorage.shared.token else {
+            print("Error: No token available")
+            return
+        }
+        
+        profileService.fetchProfile(with: token) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let profile):
+                    self?.updateUIWithProfile(profile)
+                case .failure(let error):
+                    print("Error fetching profile: \(error)")
+                }
+            }
+        }
+    }
+    
+    private func updateUIWithProfile(_ profile: Profile) {
+        userNameLabel.text = profile.name
+        userLoginLabel.text = profile.loginName
+        descriptionLabel.text = profile.bio
+    }
+    
     private func configureSubviews() {
         view.addSubview(userNameLabel)
         view.addSubview(userLoginLabel)

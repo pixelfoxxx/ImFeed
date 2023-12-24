@@ -78,7 +78,6 @@ extension WebViewViewController: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        print("Request URL:", navigationAction.request.url) // Print request after user's action
         
         if let code = fetchCode(from: navigationAction) {
             delegate?.webViewViewController(self, didAuthenticateWithCode: code)

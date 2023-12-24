@@ -21,4 +21,6 @@ final class OAuth2TokenStorage {
     func hasToken() -> Bool {
         return defaults.object(forKey: tokenKey) != nil
     }
+    
+    private init() {}
 }

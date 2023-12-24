@@ -8,12 +8,14 @@
 import UIKit
 import ProgressHUD
 
-class SplashViewController: UIViewController {
+final class SplashViewController: UIViewController {
     
     // MARK: - Properties
     private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthScreen"
+    
     private let oauthService = OAuth2Service()
-    private let tokenStorage = OAuth2TokenStorage()
+    private let profileService = ProfileService()
+    private let tokenStorage = OAuth2TokenStorage.shared
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         .lightContent
@@ -21,7 +23,7 @@ class SplashViewController: UIViewController {
     
     // MARK: - IB Outlets
     @IBOutlet private weak var splashScreenLogo: UIImageView!
-
+    
     // MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -30,15 +32,10 @@ class SplashViewController: UIViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        if tokenStorage.hasToken() {
-            switchToTabBarController()
-        } else {
-            showAuthScreen()
-        }
+        checkToken()
     }
     
-// MARK: - Navigation
+    // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
             guard let navigationController = segue.destination as? UINavigationController,
@@ -50,7 +47,7 @@ class SplashViewController: UIViewController {
             super.prepare(for: segue, sender: sender)
         }
     }
-
+    
     // MARK: - Private Methods
     private func switchToTabBarController() {
         guard let window = UIApplication.shared.windows.first else {
@@ -64,6 +61,14 @@ class SplashViewController: UIViewController {
     private func showAuthScreen() {
         performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
     }
+    
+    private func checkToken() {
+        if tokenStorage.hasToken() {
+            switchToTabBarController()
+        } else {
+            showAuthScreen()
+        }
+    }
 }
 
 // MARK: - AuthViewControllerDelegate
@@ -71,25 +76,37 @@ extension SplashViewController: AuthViewControllerDelegate {
     func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String) {
         UIBlockingProgressHUD.show()
         dismiss(animated: true) { [weak self] in
-            self?.fetchAuthToken(code)
+            guard let self = self else { return }
+            self.fetchOAuthToken(code)
         }
     }
     
-    private func fetchAuthToken(_ code: String) {
+    private func fetchOAuthToken(_ code: String) {
         oauthService.fetchAuthToken(with: code) { [weak self] result in
+            guard let self = self else { return }
+            switch result {
+            case .success(let token):
+                self.fetchProfile(token: token)
+            case .failure:
+                UIBlockingProgressHUD.dismiss()
+                break
+            }
+        }
+    }
+    
+    private func fetchProfile(token: String) {
+        profileService.fetchProfile(with: token) { [weak self] result in
+            guard let self = self else { return }
             switch result {
             case .success:
-                self?.splashScreenLogo.isHidden = true
-                self?.switchToTabBarController()
+                self.splashScreenLogo.isHidden = true
                 UIBlockingProgressHUD.dismiss()
+                self.switchToTabBarController()
             case .failure:
-                print("Authorization error") // TODO: - Handle Authorization error
-                self?.splashScreenLogo.isHidden = true
+                self.splashScreenLogo.isHidden = true
                 UIBlockingProgressHUD.dismiss()
-               
-                
+                break
             }
         }
     }
 }
-
