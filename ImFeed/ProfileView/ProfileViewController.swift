@@ -1,4 +1,5 @@
 import UIKit
+import Kingfisher
 
 final class ProfileViewController: UIViewController {
     
@@ -56,6 +57,7 @@ final class ProfileViewController: UIViewController {
         configureConstraints()
         startLoadingAnimation()
         fetchUserProfile()
+        updateAvatar()
         addProfileImageObserver()
     }
     
@@ -65,7 +67,7 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = ProfileImageService.shared.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        // TODO: Update Avatar with Kingfisher
+        avatarImageView.kf.setImage(with: url)
     }
     
     private func startLoadingAnimation() {

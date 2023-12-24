@@ -79,6 +79,7 @@ final class SplashViewController: UIViewController {
                 self.fetchProfile(token: token)
             case .failure:
                 UIBlockingProgressHUD.dismiss()
+                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось войти в систему")
                 break
             }
         }
@@ -96,13 +97,14 @@ final class SplashViewController: UIViewController {
             case .failure:
                 self.splashScreenLogo.isHidden = true
                 UIBlockingProgressHUD.dismiss()
+                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось войти в систему")
                 break
             }
         }
     }
     
     private func fetchProfileImage(username: String) {
-        profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
+        profileImageService.fetchProfileImageURL(username: username) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let imageURL):
