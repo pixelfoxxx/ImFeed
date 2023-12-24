@@ -2,15 +2,18 @@ import UIKit
 
 final class ProfileViewController: UIViewController {
     
-    let profileService = ProfileService.shared
+    private let profileService = ProfileService.shared
+    private let tokenStorage = OAuth2TokenStorage.shared
+    private let profileImageService = ProfileImageService.shared
+    private var profileImageServiceObserver: NSObjectProtocol?
     
-    //MARK: - Properties
+    // MARK: - Properties
     let userNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         label.numberOfLines = 0
-        label.text = "Username"
+        label.text = "Loading ..."
         return label
     }()
     
@@ -19,7 +22,7 @@ final class ProfileViewController: UIViewController {
         label.textColor = .ypGray
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.numberOfLines = 0
-        label.text = "Login"
+        label.text = "Loading ..."
         return label
     }()
     
@@ -28,7 +31,7 @@ final class ProfileViewController: UIViewController {
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.numberOfLines = 0
-        label.text = "Description" 
+        label.text = "Loading ..."
         return label
     }()
     
@@ -46,36 +49,48 @@ final class ProfileViewController: UIViewController {
         return button
     }()
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
+        startLoadingAnimation()
         fetchUserProfile()
+        addProfileImageObserver()
     }
     
-    //MARK: - Private methods
+    // MARK: - Private methods
+    private func updateAvatar() {
+        guard
+            let profileImageURL = ProfileImageService.shared.avatarURL,
+            let url = URL(string: profileImageURL)
+        else { return }
+        // TODO: Update Avatar with Kingfisher
+    }
     
-    private func fetchUserProfile() {
-        
-        guard let token = OAuth2TokenStorage.shared.token else {
-            print("Error: No token available")
-            return
-        }
-        
-        profileService.fetchProfile(with: token) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let profile):
-                    self?.updateUIWithProfile(profile)
-                case .failure(let error):
-                    print("Error fetching profile: \(error)")
-                }
-            }
-        }
+    private func startLoadingAnimation() {
+        animateLabel(label: userNameLabel)
+        animateLabel(label: userLoginLabel)
+        animateLabel(label: descriptionLabel)
+    }
+    
+    private func animateLabel(label: UILabel) {
+        UIView.animate(withDuration: 0.2, delay: 0.2, options: [.autoreverse, .repeat], animations: {
+            label.alpha = 0.5
+        }, completion: nil)
+    }
+    
+    private func stopLoadingAnimation() {
+        userNameLabel.layer.removeAllAnimations()
+        userLoginLabel.layer.removeAllAnimations()
+        descriptionLabel.layer.removeAllAnimations()
+        userNameLabel.alpha = 1
+        userLoginLabel.alpha = 1
+        descriptionLabel.alpha = 1
     }
     
     private func updateUIWithProfile(_ profile: Profile) {
+        stopLoadingAnimation()
         userNameLabel.text = profile.name
         userLoginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
@@ -136,7 +151,6 @@ final class ProfileViewController: UIViewController {
             avatarImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 32),
             avatarImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16)
         ])
-        
         avatarImageView.clipsToBounds = true
         avatarImageView.layer.cornerRadius = 70 / 2
     }
@@ -149,5 +163,35 @@ final class ProfileViewController: UIViewController {
             logoutButton.centerYAnchor.constraint(equalTo: avatarImageView.centerYAnchor),
             logoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
+    }
+    // MARK: - Fetching User Profile
+    private func fetchUserProfile() {
+        guard let token = OAuth2TokenStorage.shared.token else {
+            print("Error: No token available")
+            return
+        }
+        profileService.fetchProfile(with: token) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let profile):
+                    self?.updateUIWithProfile(profile)
+                case .failure(let error):
+                    print("Error fetching profile: \(error)")
+                }
+            }
+        }
+    }
+    // MARK: - Notification Center Observer
+    private func addProfileImageObserver() {
+        profileImageServiceObserver = NotificationCenter.default
+            .addObserver(
+                forName: ProfileImageService.DidChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                self.updateAvatar()
+            }
+        updateAvatar()
     }
 }

@@ -14,10 +14,12 @@ struct Profile {
         return "@\(username)"
     }
     var bio: String
+    var profileImage: String
     
     init(from profileResult: ProfileResult) {
         self.username = profileResult.username
         self.name = "\(profileResult.firstName) \(profileResult.lastName ?? "")"
         self.bio = profileResult.bio ?? ""
+        self.profileImage = profileResult.profileImage.small
     }
 }

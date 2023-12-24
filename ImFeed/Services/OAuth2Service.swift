@@ -14,7 +14,6 @@ final class OAuth2Service {
     
     // MARK: - Public Methods
     func fetchAuthToken(with code: String, completion: @escaping (Result<String, Error>) -> Void) {
-        
         guard let url = buildRequestURL(with: code) else {
             completion(.failure(URLError(.badURL)))
             return
