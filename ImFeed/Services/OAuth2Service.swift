@@ -9,7 +9,7 @@ import Foundation
 
 // MARK: - OAuth2Service
 final class OAuth2Service {
-    // MARK: - Properties
+    // MARK: - Constants
     private let tokenStorage = OAuth2TokenStorage.shared
     
     // MARK: - Public Methods
@@ -22,9 +22,16 @@ final class OAuth2Service {
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         
-        URLSession.shared.dataTask(with: request) { data, response, error in
-            self.handleResponse(data: data, response: response, error: error, completion: completion)
-        }.resume()
+        let task = URLSession.shared.objectTask(for: request) { (result: Result<AuthTokenResponseBody, Error>) in
+            switch result {
+            case .success(let tokenResponse):
+                self.tokenStorage.token = tokenResponse.accessToken
+                completion(.success(tokenResponse.accessToken))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+        task.resume()
     }
     
     // MARK: - Private Methods
@@ -38,29 +45,5 @@ final class OAuth2Service {
             URLQueryItem(name: "grant_type", value: "authorization_code")
         ]
         return urlComponents?.url
-    }
-    
-    private func handleResponse(data: Data?, response: URLResponse?, error: Error?, completion: @escaping (Result<String, Error>) -> Void) {
-        guard let data = data,
-              let response = response as? HTTPURLResponse,
-              200...299 ~= response.statusCode,
-              error == nil else {
-            DispatchQueue.main.async {
-                completion(.failure(error ?? URLError(.badServerResponse)))
-            }
-            return
-        }
-        
-        do {
-            let tokenResponse = try JSONDecoder().decode(AuthTokenResponseBody.self, from: data)
-            DispatchQueue.main.async {
-                completion(.success(tokenResponse.accessToken))
-                self.tokenStorage.token = tokenResponse.accessToken
-            }
-        } catch {
-            DispatchQueue.main.async {
-                completion(.failure(error))
-            }
-        }
     }
 }
