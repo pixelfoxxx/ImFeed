@@ -10,17 +10,14 @@ import ProgressHUD
 
 final class SplashViewController: UIViewController {
     
+    // MARK: - Constants
+    private let showAuthenticationScreenSegueIdentifier = "ShowAuthScreen"
+
     // MARK: - Properties
-    private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthScreen"
-    
     private let oauthService = OAuth2Service()
     private let profileService = ProfileService()
     private let tokenStorage = OAuth2TokenStorage.shared
     private let profileImageService = ProfileImageService.shared
-    
-    override var preferredStatusBarStyle: UIStatusBarStyle {
-        .lightContent
-    }
     
     // MARK: - IB Outlets
     @IBOutlet private weak var splashScreenLogo: UIImageView!
@@ -38,18 +35,84 @@ final class SplashViewController: UIViewController {
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
-            guard let navigationController = segue.destination as? UINavigationController,
-                  let viewController = navigationController.viewControllers.first as? OAuthViewController else {
-                fatalError("Failed to prepare for \(ShowAuthenticationScreenSegueIdentifier)")
-            }
-            viewController.delegate = self
+        if segue.identifier == showAuthenticationScreenSegueIdentifier {
+            prepareForAuthenticationScreenSegue(segue)
         } else {
             super.prepare(for: segue, sender: sender)
         }
     }
     
-    // MARK: - Private Methods
+    // MARK: - Error Handling
+    private func showErrorAlert(message: String) {
+        AlertPresenter.presentAlert(on: self, title: "Что-то пошло не так", message: message)
+    }
+    
+    // MARK: - Authentication
+    private func fetchOAuthToken(_ code: String) {
+        oauthService.fetchAuthToken(with: code) { [weak self] result in
+            guard let self = self else { return }
+            self.handleOAuthTokenResult(result)
+        }
+    }
+    
+    private func handleOAuthTokenResult(_ result: Result<String, Error>) {
+        switch result {
+        case .success(let token):
+            fetchProfile(token: token)
+        case .failure:
+            UIBlockingProgressHUD.dismiss()
+            showErrorAlert(message: "Не удалось войти в систему")
+        }
+    }
+    
+    private func fetchProfile(token: String) {
+        profileService.fetchProfile(with: token) { [weak self] result in
+            guard let self = self else { return }
+            self.handleProfileResult(result)
+        }
+    }
+    
+    private func handleProfileResult(_ result: Result<Profile, Error>) {
+        switch result {
+        case .success(let profile):
+            fetchProfileImage(username: profile.username)
+            splashScreenLogo.isHidden = true
+            UIBlockingProgressHUD.dismiss()
+            switchToTabBarController()
+        case .failure:
+            splashScreenLogo.isHidden = true
+            UIBlockingProgressHUD.dismiss()
+            showErrorAlert(message: "Не удалось войти в систему")
+        }
+    }
+    
+    private func fetchProfileImage(username: String) {
+        profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
+            guard let self = self else { return }
+            DispatchQueue.main.async {
+                self.handleProfileImageResult(result)
+            }
+        }
+    }
+    
+    private func handleProfileImageResult(_ result: Result<String, Error>) {
+        switch result {
+        case .success(let imageURL):
+            print("Profile Image URL: \(imageURL)")
+        case .failure:
+            showErrorAlert(message: "Не удалось загрузить изображение профиля")
+        }
+    }
+    
+    // MARK: - Helper Methods
+    private func prepareForAuthenticationScreenSegue(_ segue: UIStoryboardSegue) {
+        guard let navigationController = segue.destination as? UINavigationController,
+              let viewController = navigationController.viewControllers.first as? OAuthViewController else {
+            fatalError("Failed to prepare for \(showAuthenticationScreenSegueIdentifier)")
+        }
+        viewController.delegate = self
+    }
+    
     private func switchToTabBarController() {
         guard let window = UIApplication.shared.windows.first else {
             fatalError("Invalid Configuration")
@@ -60,7 +123,7 @@ final class SplashViewController: UIViewController {
     }
     
     private func showAuthScreen() {
-        performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
+        performSegue(withIdentifier: showAuthenticationScreenSegueIdentifier, sender: nil)
     }
     
     private func checkToken() {
@@ -68,49 +131,6 @@ final class SplashViewController: UIViewController {
             switchToTabBarController()
         } else {
             showAuthScreen()
-        }
-    }
-    
-    private func fetchOAuthToken(_ code: String) {
-        oauthService.fetchAuthToken(with: code) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let token):
-                self.fetchProfile(token: token)
-            case .failure:
-                UIBlockingProgressHUD.dismiss()
-                break
-            }
-        }
-    }
-    
-    private func fetchProfile(token: String) {
-        profileService.fetchProfile(with: token) { [weak self] result in
-            guard let self = self else { return }
-            switch result {
-            case .success(let profile):
-                self.fetchProfileImage(username: profile.username)
-                self.splashScreenLogo.isHidden = true
-                UIBlockingProgressHUD.dismiss()
-                self.switchToTabBarController()
-            case .failure:
-                self.splashScreenLogo.isHidden = true
-                UIBlockingProgressHUD.dismiss()
-                break
-            }
-        }
-    }
-    
-    private func fetchProfileImage(username: String) {
-        ProfileImageService.shared.fetchProfileImageURL(username: username) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let imageURL):
-                    print("Profile Image URL: \(imageURL)")
-                case .failure(let error):
-                    print("Error fetching profile image URL: \(error)")
-                }
-            }
         }
     }
 }
