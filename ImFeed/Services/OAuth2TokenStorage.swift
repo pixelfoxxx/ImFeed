@@ -30,11 +30,3 @@ final class OAuth2TokenStorage {
     
     private init() {}
 }
-
-// UserDefaults:
-//  private let defaults = UserDefaults.standard
-
-//        get { defaults.string(forKey: tokenKey) }
-//        set { defaults.set(newValue, forKey: tokenKey) }
-
-//        return defaults.object(forKey: tokenKey) != nil

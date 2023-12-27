@@ -11,7 +11,6 @@ import ProgressHUD
 final class SplashViewController: UIViewController {
     
     // MARK: - Properties
-    private let ShowAuthenticationScreenSegueIdentifier = "ShowAuthScreen"
     
     private let oauthService = OAuth2Service()
     private let profileService = ProfileService()
@@ -22,8 +21,12 @@ final class SplashViewController: UIViewController {
         .lightContent
     }
     
-    // MARK: - IB Outlets
-    @IBOutlet private weak var splashScreenLogo: UIImageView!
+    let splashLogoImage: UIImageView = {
+        let imageView = UIImageView()
+        imageView.contentMode = .scaleAspectFit
+        imageView.image = UIImage(named: "YP Logo")
+        return imageView
+    }()
     
     // MARK: - Lifecycle
     override func viewWillAppear(_ animated: Bool) {
@@ -31,25 +34,14 @@ final class SplashViewController: UIViewController {
         setNeedsStatusBarAppearanceUpdate()
     }
     
-    override func viewDidAppear(_ animated: Bool) {
-        super.viewDidAppear(animated)
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configureSubviews()
+        configureConstraints()
         checkToken()
     }
     
     // MARK: - Navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == ShowAuthenticationScreenSegueIdentifier {
-            guard let navigationController = segue.destination as? UINavigationController,
-                  let viewController = navigationController.viewControllers.first as? OAuthViewController else {
-                fatalError("Failed to prepare for \(ShowAuthenticationScreenSegueIdentifier)")
-            }
-            viewController.delegate = self
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
-    }
-    
-    // MARK: - Private Methods
     private func switchToTabBarController() {
         guard let window = UIApplication.shared.windows.first else {
             fatalError("Invalid Configuration")
@@ -60,14 +52,20 @@ final class SplashViewController: UIViewController {
     }
     
     private func showAuthScreen() {
-        performSegue(withIdentifier: ShowAuthenticationScreenSegueIdentifier, sender: nil)
+        let authViewController = OAuthViewController()
+        authViewController.delegate = self
+        authViewController.modalPresentationStyle = .fullScreen
+        present(authViewController, animated: true, completion: nil)
     }
     
+    // MARK: - Private Methods
     private func checkToken() {
-        if tokenStorage.hasToken() {
-            switchToTabBarController()
-        } else {
-            showAuthScreen()
+        DispatchQueue.main.async {
+            if self.tokenStorage.hasToken() {
+                self.switchToTabBarController()
+            } else {
+                self.showAuthScreen()
+            }
         }
     }
     
@@ -91,11 +89,9 @@ final class SplashViewController: UIViewController {
             switch result {
             case .success(let profile):
                 self.fetchProfileImage(username: profile.username)
-                self.splashScreenLogo.isHidden = true
                 UIBlockingProgressHUD.dismiss()
                 self.switchToTabBarController()
             case .failure:
-                self.splashScreenLogo.isHidden = true
                 UIBlockingProgressHUD.dismiss()
                 AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось войти в систему")
                 break
@@ -115,6 +111,25 @@ final class SplashViewController: UIViewController {
             }
         }
     }
+    
+    // MARK: - UI Methods
+    private func configureConstraints() {
+        configureSplashLogoImage()
+    }
+    
+    private func configureSubviews() {
+        view.addSubview(splashLogoImage)
+        view.backgroundColor = .ypBlack
+    }
+    
+    private func configureSplashLogoImage() {
+        splashLogoImage.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            splashLogoImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            splashLogoImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
 }
 
 // MARK: - AuthViewControllerDelegate
