@@ -52,8 +52,8 @@ final class ProfileImageService {
     }
     
     private func handleSuccess(userResult: ProfileResult, completion: (Result<String, Error>) -> Void) {
-        avatarURL = userResult.profileImage.small
+        avatarURL = userResult.profileImage.large
         NotificationCenter.default.post(name: Self.didChangeNotification, object: self, userInfo: ["URL": avatarURL as Any])
-        completion(.success(userResult.profileImage.small))
+        completion(.success(userResult.profileImage.large))
     }
 }

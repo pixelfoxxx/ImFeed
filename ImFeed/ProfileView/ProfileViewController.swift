@@ -66,7 +66,7 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = profileImageService.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        avatarImageView.kf.setImage(with: url, placeholder: UIImage(named: "placeholder.jpeg"))
+        avatarImageView.kf.setImage(with: url, placeholder: UIImage(named: "user_photo"))
     }
     
     private func startLoadingAnimation() {
@@ -165,6 +165,7 @@ final class ProfileViewController: UIViewController {
             logoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
     }
+    
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
         guard let token = tokenStorage.token else {
@@ -188,10 +189,10 @@ final class ProfileViewController: UIViewController {
         profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(let imageURL):
+                case .success:
                     self?.updateAvatar()
                 case .failure(let error):
-                    print("Ошибка при получении URL изображения профиля: \(error)")
+                    print("Error while getting profile Image URL: \(error)")
                 }
             }
         }

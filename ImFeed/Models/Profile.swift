@@ -20,6 +20,6 @@ struct Profile {
         self.username = profileResult.username
         self.name = "\(profileResult.firstName) \(profileResult.lastName ?? "")"
         self.bio = profileResult.bio ?? ""
-        self.profileImage = profileResult.profileImage.small
+        self.profileImage = profileResult.profileImage.large
     }
 }
