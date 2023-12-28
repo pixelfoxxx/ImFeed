@@ -4,7 +4,7 @@ final class ImagesListCell: UITableViewCell {
     // MARK: - Cell Identifier
     static let reuseIdentifier = "ImagesListCell"
     // MARK: - IBOutlets
-    @IBOutlet weak var cellImage: UIImageView!
+    @IBOutlet weak var cellImageView: UIImageView!
     @IBOutlet weak var likeButton: UIButton!
     @IBOutlet weak var dateLabel: UILabel!
     // MARK: - Gradient
@@ -27,14 +27,14 @@ final class ImagesListCell: UITableViewCell {
     
     private func configureGradientView() {
         gradientView.translatesAutoresizingMaskIntoConstraints = false
-        cellImage.addSubview(gradientView)
-        cellImage.bringSubviewToFront(gradientView)
+        cellImageView.addSubview(gradientView)
+        cellImageView.bringSubviewToFront(gradientView)
         
         NSLayoutConstraint.activate([
-            gradientView.topAnchor.constraint(equalTo: cellImage.topAnchor),
-            gradientView.trailingAnchor.constraint(equalTo: cellImage.trailingAnchor),
-            gradientView.leadingAnchor.constraint(equalTo: cellImage.leadingAnchor),
-            gradientView.bottomAnchor.constraint(equalTo: cellImage.bottomAnchor)
+            gradientView.topAnchor.constraint(equalTo: cellImageView.topAnchor),
+            gradientView.trailingAnchor.constraint(equalTo: cellImageView.trailingAnchor),
+            gradientView.leadingAnchor.constraint(equalTo: cellImageView.leadingAnchor),
+            gradientView.bottomAnchor.constraint(equalTo: cellImageView.bottomAnchor)
         
         ])
         

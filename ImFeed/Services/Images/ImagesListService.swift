@@ -10,9 +10,10 @@ import Foundation
 final class ImagesListService {
     // MARK: - Constants
     static let shared = ImagesListService()
-    static let DidChangeNotification = Notification.Name("ImagesListServiceDidChange")
+    static let didChangeNotification = Notification.Name("ImagesListServiceDidChange")
     
     private static let baseURLString = "https://api.unsplash.com/photos/"
+    private static let itemsPerPage = 10
     
     // MARK: - Properties
     private let tokenStorage = OAuth2TokenStorage.shared
@@ -61,6 +62,6 @@ final class ImagesListService {
     private func handleSuccess(photoResults: [PhotoResult]) {
         let newPhotos = photoResults.map { Photo(from: $0) }
         photos.append(contentsOf: newPhotos)
-        NotificationCenter.default.post(name: Self.DidChangeNotification, object: self)
+        NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
     }
 }

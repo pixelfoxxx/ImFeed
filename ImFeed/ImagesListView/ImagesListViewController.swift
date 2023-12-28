@@ -1,16 +1,15 @@
 import UIKit
+import Kingfisher
+import AlamofireImage
 
 final class ImagesListViewController: UIViewController {
     // MARK: - Properties
     private let photosNames: [String] = (0..<20).map { "\($0)" }
     private let ShowSingleImageSegueIdentifier = "ShowSingleImage"
+    private let imagesListService = ImagesListService()
     
-    private lazy var tableView: UITableView = {
-        let tableView = UITableView(frame: CGRect.zero, style: .grouped)
-        tableView.backgroundColor = .clear
-        tableView.separatorStyle = .none
-        return tableView
-    }()
+    @IBOutlet weak var tableView: UITableView!
+    
     // MARK: - Date Formatter
     private lazy var dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
@@ -22,6 +21,8 @@ final class ImagesListViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureTableView()
+        addImageListObserver()
+        imagesListService.fetchPhotosNextPage()
     }
     
     // MARK: - Single Image Configuration
@@ -29,7 +30,7 @@ final class ImagesListViewController: UIViewController {
         if segue.identifier == ShowSingleImageSegueIdentifier,
            let viewController = segue.destination as? SingleImageViewController,
            let indexPath = sender as? IndexPath {
-             viewController.image = UIImage(named: photosNames[indexPath.row])
+            viewController.image = UIImage(named: photosNames[indexPath.row])
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -42,12 +43,24 @@ final class ImagesListViewController: UIViewController {
         tableView.delegate = self
         navigationController?.navigationBar.isHidden = true
     }
+    
+    private func addImageListObserver() {
+        NotificationCenter.default
+            .addObserver(
+                forName: ImagesListService.didChangeNotification,
+                object: nil,
+                queue: .main
+            ) { [weak self] _ in
+                guard let self = self else { return }
+                 self.tableView.reloadData()
+            }
+    }
 }
 
 // MARK: - UITableViewDataSource
 extension ImagesListViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return photosNames.count
+        return imagesListService.photos.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -79,10 +92,14 @@ extension ImagesListViewController: UITableViewDelegate {
 // MARK: - Cell Configuration
 extension ImagesListViewController {
     private func configureCell(_ cell: ImagesListCell, for indexPath: IndexPath) {
-        guard let image = UIImage(named: photosNames[indexPath.row]) else {
-            return
+        
+        if indexPath.row < imagesListService.photos.count {
+            let photo = imagesListService.photos[indexPath.row]
+            if let url = URL(string: photo.largeImageURL) {
+                cell.cellImageView.af.setImage(withURL: url)
+            }
         }
-        cell.cellImage.image = image
+        
         cell.dateLabel.text = dateFormatter.string(from: Date())
         let isLiked = indexPath.row % 2 == 0
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")

@@ -9,8 +9,8 @@ import Foundation
 
 struct PhotoResult: Codable {
     let id: String
-    let createdAt: Date
-    let updatedAt: Date
+    let createdAt: String
+    let updatedAt: String
     let width: Int
     let height: Int
     let color: String

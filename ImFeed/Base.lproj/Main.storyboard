@@ -189,16 +189,12 @@
                                         </tableViewCellContentView>
                                         <color key="backgroundColor" red="0.1019607843" green="0.1058823529" blue="0.1333333333" alpha="0.0" colorSpace="custom" customColorSpace="sRGB"/>
                                         <connections>
-                                            <outlet property="cellImage" destination="QP2-Me-12E" id="bPV-4I-8i4"/>
+                                            <outlet property="cellImageView" destination="QP2-Me-12E" id="bPV-4I-8i4"/>
                                             <outlet property="dateLabel" destination="z5I-3l-lrQ" id="PhI-Ud-nOI"/>
                                             <outlet property="likeButton" destination="t2d-0S-xbe" id="ymk-Xd-2ui"/>
                                         </connections>
                                     </tableViewCell>
                                 </prototypes>
-                                <connections>
-                                    <outlet property="dataSource" destination="C9Y-N3-M4Z" id="ufb-Lg-GKZ"/>
-                                    <outlet property="delegate" destination="C9Y-N3-M4Z" id="bFW-Km-1jC"/>
-                                </connections>
                             </tableView>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="wY1-1r-hDk"/>
@@ -214,6 +210,7 @@
                     <navigationItem key="navigationItem" id="aYe-TY-wN3"/>
                     <simulatedTabBarMetrics key="simulatedBottomBarMetrics"/>
                     <connections>
+                        <outlet property="tableView" destination="pFI-Vs-Hux" id="6b2-Qv-UBQ"/>
                         <segue destination="u8s-9H-VCD" kind="presentation" identifier="ShowSingleImage" id="UKj-bh-NNp"/>
                     </connections>
                 </viewController>
