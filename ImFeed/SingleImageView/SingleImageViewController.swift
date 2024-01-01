@@ -1,35 +1,29 @@
 import UIKit
+import Kingfisher
 
 final class SingleImageViewController: UIViewController {
     
-    //MARK: - Properties
-    var image: UIImage? {
-        didSet {
-            guard isViewLoaded else { return }
-            imageView.image = image
-            rescaleAndCenterImageInScrollView(image: image)
-        }
-    }
+    // MARK: - Properties
+    var image: UIImage?
     
-    //MARK: - IB Outlets
+    var url: String?
+    
+    // MARK: - IB Outlets
     @IBOutlet private weak var scrollView: UIScrollView!
     @IBOutlet private weak var imageView: UIImageView!
     
-    //MARK: - Lifecycle
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        imageView.image = image
-        rescaleAndCenterImageInScrollView(image: image)
-        
-        scrollView.minimumZoomScale = 0.1
-        scrollView.maximumZoomScale = 1.25
+        setSingleImage()
+        setImageZoomScale()
     }
     
-    //MARK: - IB Actions
+    // MARK: - IB Actions
     @IBAction private func didTapShareButton(_ sender: UIButton) {
-        if let image = image {
+        if let url = url {
             let share = UIActivityViewController(
-                activityItems: [image],
+                activityItems: [url],
                 applicationActivities: nil)
             present(share, animated: true)
         } else {
@@ -41,7 +35,29 @@ final class SingleImageViewController: UIViewController {
         dismiss(animated: true, completion: nil)
     }
     
-    //MARK: - Private Methods
+    // MARK: - Private Methods
+    private func setImageZoomScale() {
+        scrollView.minimumZoomScale = 0.1
+        scrollView.maximumZoomScale = 1.25
+    }
+    
+    private func setSingleImage() {
+        if let url = URL(string: url ?? "") {
+            KingfisherManager.shared.retrieveImage(with: url) { result in
+                switch result {
+                case .success(let resource):
+                    DispatchQueue.main.async {
+                        self.imageView.image = resource.image
+                        self.rescaleAndCenterImageInScrollView(image: resource.image)
+                    }
+                    
+                case .failure(let error):
+                    fatalError(error.localizedDescription)
+                }
+            }
+        }
+        
+    }
     private func rescaleAndCenterImageInScrollView(image: UIImage?) {
         guard let image = image else {
             print("No image to scale")
@@ -65,7 +81,7 @@ final class SingleImageViewController: UIViewController {
     }
 }
 
-//MARK: - UIScrollViewDelegate
+// MARK: - UIScrollViewDelegate
 extension SingleImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         imageView

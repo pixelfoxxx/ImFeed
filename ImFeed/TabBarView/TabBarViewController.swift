@@ -16,6 +16,11 @@ final class TabBarViewController: UITabBarController {
             withIdentifier: "ImagesListViewController"
         )
         
+        imagesListViewController.tabBarItem = UITabBarItem(
+            title: nil,
+            image: UIImage(named: "tab_feed_active"),
+            selectedImage: nil
+        )
         let profileViewController = ProfileViewController()
         profileViewController.tabBarItem = UITabBarItem(
             title: nil,
@@ -25,5 +30,4 @@ final class TabBarViewController: UITabBarController {
         
         self.viewControllers = [imagesListViewController, profileViewController]
     }
-    
 }

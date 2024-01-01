@@ -11,7 +11,6 @@ import ProgressHUD
 final class SplashViewController: UIViewController {
     
     // MARK: - Properties
-    
     private let oauthService = OAuth2Service()
     private let profileService = ProfileService()
     private let tokenStorage = OAuth2TokenStorage.shared
@@ -21,7 +20,7 @@ final class SplashViewController: UIViewController {
         .lightContent
     }
     
-    let splashLogoImage: UIImageView = {
+    private let splashLogoImage: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "YP Logo")
@@ -129,7 +128,6 @@ final class SplashViewController: UIViewController {
             splashLogoImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
-    
 }
 
 // MARK: - AuthViewControllerDelegate

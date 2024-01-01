@@ -95,7 +95,7 @@ extension ImagesListViewController {
         
         if indexPath.row < imagesListService.photos.count {
             let photo = imagesListService.photos[indexPath.row]
-            if let url = URL(string: photo.largeImageURL) {
+            if let url = URL(string: photo.smallImageURL) {
                 cell.cellImageView.af.setImage(withURL: url)
             }
         }
