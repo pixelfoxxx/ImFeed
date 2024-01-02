@@ -4,9 +4,7 @@ import Kingfisher
 final class SingleImageViewController: UIViewController {
     
     // MARK: - Properties
-    var image: UIImage?
-    
-    var url: String?
+    var imageUrl: URL?
     
     // MARK: - IB Outlets
     @IBOutlet private weak var scrollView: UIScrollView!
@@ -21,7 +19,7 @@ final class SingleImageViewController: UIViewController {
     
     // MARK: - IB Actions
     @IBAction private func didTapShareButton(_ sender: UIButton) {
-        if let url = url {
+        if let url = imageUrl {
             let share = UIActivityViewController(
                 activityItems: [url],
                 applicationActivities: nil)
@@ -42,22 +40,27 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func setSingleImage() {
-        if let url = URL(string: url ?? "") {
-            KingfisherManager.shared.retrieveImage(with: url) { result in
-                switch result {
-                case .success(let resource):
-                    DispatchQueue.main.async {
-                        self.imageView.image = resource.image
-                        self.rescaleAndCenterImageInScrollView(image: resource.image)
-                    }
-                    
-                case .failure(let error):
-                    fatalError(error.localizedDescription)
-                }
-            }
+        guard let imageUrl = imageUrl else {
+            print("Invalid image URL")
+            return
         }
         
+        imageView.kf.setImage(
+            with: imageUrl,
+            placeholder: UIImage(named: "loading_stub"),
+            options: [.transition(.fade(1))],
+            progressBlock: nil) { result in
+                switch result {
+                case .success(let value):
+                    self.imageView.image = value.image
+                    self.rescaleAndCenterImageInScrollView(image: value.image)
+                case .failure(let error):
+                    print("Error: \(error.localizedDescription)")
+                }
+            }
     }
+    
+    
     private func rescaleAndCenterImageInScrollView(image: UIImage?) {
         guard let image = image else {
             print("No image to scale")

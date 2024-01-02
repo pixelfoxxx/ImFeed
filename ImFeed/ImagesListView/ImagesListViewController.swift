@@ -1,6 +1,5 @@
 import UIKit
 import Kingfisher
-import AlamofireImage
 
 final class ImagesListViewController: UIViewController {
     // MARK: - Properties
@@ -30,7 +29,8 @@ final class ImagesListViewController: UIViewController {
         if segue.identifier == ShowSingleImageSegueIdentifier,
            let viewController = segue.destination as? SingleImageViewController,
            let indexPath = sender as? IndexPath {
-            viewController.image = UIImage(named: photosNames[indexPath.row])
+            let photo = imagesListService.photos[indexPath.row]
+            viewController.imageUrl = URL(string: photo.smallImageURL)
         } else {
             super.prepare(for: segue, sender: sender)
         }
@@ -52,7 +52,7 @@ final class ImagesListViewController: UIViewController {
                 queue: .main
             ) { [weak self] _ in
                 guard let self = self else { return }
-                 self.tableView.reloadData()
+                self.tableView.reloadData()
             }
     }
 }
@@ -96,7 +96,7 @@ extension ImagesListViewController {
         if indexPath.row < imagesListService.photos.count {
             let photo = imagesListService.photos[indexPath.row]
             if let url = URL(string: photo.smallImageURL) {
-                cell.cellImageView.af.setImage(withURL: url)
+                cell.cellImageView.kf.setImage(with: url, placeholder: UIImage(named: "loading_stub"))
             }
         }
         
