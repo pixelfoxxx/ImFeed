@@ -4,7 +4,6 @@ import Kingfisher
 final class ImagesListViewController: UIViewController {
     // MARK: - Properties
     private var photos: [Photo] = []
-    private let ShowSingleImageSegueIdentifier = "ShowSingleImage"
     private let imagesListService = ImagesListService()
     
     @IBOutlet weak var tableView: UITableView!
@@ -16,24 +15,13 @@ final class ImagesListViewController: UIViewController {
         formatter.timeStyle = .none
         return formatter
     }()
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         configureTableView()
         addImageListObserver()
         imagesListService.fetchPhotosNextPage()
-    }
-    
-    // MARK: - Single Image Configuration
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        if segue.identifier == ShowSingleImageSegueIdentifier,
-           let viewController = segue.destination as? SingleImageViewController,
-           let indexPath = sender as? IndexPath {
-            let photo = imagesListService.photos[indexPath.row]
-            viewController.imageUrl = URL(string: photo.smallImageURL)
-        } else {
-            super.prepare(for: segue, sender: sender)
-        }
     }
     
     // MARK: - Cell Configuration
@@ -43,12 +31,10 @@ final class ImagesListViewController: UIViewController {
     }
     
     // MARK: - Private Methods
-    
     private func configureTableView() {
         tableView.contentInset = UIEdgeInsets(top: 12, left: 0, bottom: 12, right: 0)
         tableView.dataSource = self
         tableView.delegate = self
-        navigationController?.navigationBar.isHidden = true
     }
     
     private func addImageListObserver() {
@@ -107,7 +93,16 @@ extension ImagesListViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        performSegue(withIdentifier: ShowSingleImageSegueIdentifier, sender: indexPath)
+        let photo = photos[indexPath.row]
+        showSingleImageViewController(with: URL(string: photo.smallImageURL))
+    }
+    
+    private func showSingleImageViewController(with imageUrl: URL?) {
+        let singleImageVC = SingleImageViewController()
+        singleImageVC.imageUrl = imageUrl
+        let navigationController = UINavigationController(rootViewController: singleImageVC)
+        navigationController.modalPresentationStyle = .fullScreen
+        present(navigationController, animated: true, completion: nil)
     }
     
     func tableView(_ tableView: UITableView, willDisplay cell: UITableViewCell, forRowAt indexPath: IndexPath) {
