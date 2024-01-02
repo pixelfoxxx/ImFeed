@@ -18,7 +18,7 @@ struct Photo {
     let fullImageURL: String
     let smallImageURL: String
     let regularImageURL: String
-    let isLiked: Bool
+    var isLiked: Bool
 }
 
 extension Photo {

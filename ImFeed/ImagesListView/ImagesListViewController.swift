@@ -28,6 +28,7 @@ final class ImagesListViewController: UIViewController {
     private func configureCell(_ cell: ImagesListCell, for indexPath: IndexPath) {
         let photo = photos[indexPath.row]
         cell.configure(with: photo, dateFormatter: dateFormatter)
+        cell.delegate = self
     }
     
     // MARK: - Private Methods
@@ -109,6 +110,28 @@ extension ImagesListViewController: UITableViewDelegate {
         let lastElement = imagesListService.photos.count - 1
         if indexPath.row == lastElement {
             imagesListService.fetchPhotosNextPage()
+        }
+    }
+}
+
+// MARK: - ImagesListCellDelegate
+extension ImagesListViewController: ImagesListCellDelegate {
+    func imageListCellDidTapLike(_ cell: ImagesListCell) {
+        guard let indexPath = tableView.indexPath(for: cell) else { return }
+        let photo = photos[indexPath.row]
+        let isLike = !photo.isLiked
+        
+        UIBlockingProgressHUD.show()
+        imagesListService.changeLike(photoId: photo.id, isLike: isLike) { [weak self] result in
+            switch result {
+            case .success():
+                self?.photos[indexPath.row].isLiked = isLike
+                self?.tableView.reloadRows(at: [indexPath], with: .none)
+                UIBlockingProgressHUD.dismiss()
+            case .failure(let error):
+                print("Error changing like status: \(error)")
+                UIBlockingProgressHUD.dismiss()
+            }
         }
     }
 }
