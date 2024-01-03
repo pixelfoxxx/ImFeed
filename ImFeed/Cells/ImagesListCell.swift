@@ -20,6 +20,7 @@ final class ImagesListCell: UITableViewCell {
     private lazy var gradientView: UIView = {
         let view = UIView()
         view.backgroundColor = .clear
+        
         return view
     }()
     

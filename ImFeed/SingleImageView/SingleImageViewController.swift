@@ -11,7 +11,7 @@ final class SingleImageViewController: UIViewController {
     var imageUrl: URL?
     private let imageView: UIImageView = {
         let photoView = UIImageView()
-        photoView.contentMode = .scaleAspectFit
+        photoView.contentMode = .scaleAspectFill
         
         return photoView
     }()
@@ -19,6 +19,7 @@ final class SingleImageViewController: UIViewController {
     private let sharedButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "sharing_button"), for: .normal)
+        
         return button
     }()
     
@@ -52,6 +53,10 @@ final class SingleImageViewController: UIViewController {
         present(activityViewController, animated: true, completion: nil)
     }
     private func setupNavigationBar() {
+        navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
+        navigationController?.navigationBar.shadowImage = UIImage()
+        navigationController?.navigationBar.isTranslucent = true
+        
         let backItem = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(backAction))
         backItem.tintColor = .white
         self.navigationItem.leftBarButtonItem = backItem
@@ -63,7 +68,7 @@ final class SingleImageViewController: UIViewController {
     
     private func setupImage() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
-
+        
         NSLayoutConstraint.activate([
             imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -106,15 +111,18 @@ final class SingleImageViewController: UIViewController {
             return
         }
         
+        UIBlockingProgressHUD.show()
         imageView.kf.setImage(
             with: imageUrl,
-            placeholder: UIImage(named: "loading_stub"),
             options: [.transition(.fade(1))],
             progressBlock: nil) { result in
                 switch result {
                 case .success(let value):
+                    UIBlockingProgressHUD.dismiss()
                     self.imageView.image = value.image
                 case .failure(let error):
+                    UIBlockingProgressHUD.dismiss()
+                    AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось загрузить изображение")
                     print("Error: \(error.localizedDescription)")
                 }
             }

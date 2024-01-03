@@ -13,6 +13,7 @@ final class ImagesListViewController: UIViewController {
         let formatter = DateFormatter()
         formatter.dateStyle = .long
         formatter.timeStyle = .none
+        
         return formatter
     }()
     
@@ -95,7 +96,7 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let photo = photos[indexPath.row]
-        showSingleImageViewController(with: URL(string: photo.smallImageURL))
+        showSingleImageViewController(with: URL(string: photo.fullImageURL))
     }
     
     private func showSingleImageViewController(with imageUrl: URL?) {

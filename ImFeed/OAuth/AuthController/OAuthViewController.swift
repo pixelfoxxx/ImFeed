@@ -60,7 +60,7 @@ final class OAuthViewController: UIViewController {
     
     // MARK: - UI Methods
     private func configureConstraints() {
-        configureSplashLogoImage()
+        configureUnsplashLogoImage()
         configureSignInButtonConstraints()
     }
     
@@ -72,7 +72,7 @@ final class OAuthViewController: UIViewController {
         signInButton.addTarget(self, action: #selector(signInButtonTapped), for: .touchUpInside)
     }
     
-    private func configureSplashLogoImage() {
+    private func configureUnsplashLogoImage() {
         unsplashLogoImage.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             unsplashLogoImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
