@@ -1,5 +1,6 @@
 import UIKit
 import Kingfisher
+import WebKit
 
 final class ProfileViewController: UIViewController {
     
@@ -15,6 +16,7 @@ final class ProfileViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
         label.numberOfLines = 0
         label.text = "Loading ..."
+        
         return label
     }()
     
@@ -24,6 +26,7 @@ final class ProfileViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.numberOfLines = 0
         label.text = "Loading ..."
+        
         return label
     }()
     
@@ -33,6 +36,7 @@ final class ProfileViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
         label.numberOfLines = 0
         label.text = "Loading ..."
+        
         return label
     }()
     
@@ -40,6 +44,7 @@ final class ProfileViewController: UIViewController {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "user_photo")
+        
         return imageView
     }()
     
@@ -47,6 +52,7 @@ final class ProfileViewController: UIViewController {
         let button = UIButton()
         button.setImage(UIImage(systemName: "ipad.and.arrow.forward"), for: .normal)
         button.tintColor = .ypRed
+        
         return button
     }()
     
@@ -58,6 +64,7 @@ final class ProfileViewController: UIViewController {
         startLoadingAnimation()
         fetchUserProfile()
         addProfileImageObserver()
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
     }
     
     // MARK: - Private methods
@@ -194,6 +201,35 @@ final class ProfileViewController: UIViewController {
                 case .failure(let error):
                     print("Error while getting profile Image URL: \(error)")
                 }
+            }
+        }
+    }
+    
+    // MARK: - Profile logout
+    private func logout() {
+        tokenStorage.clearToken()
+        cleanCookiesAndData()
+        navigateToInitialScreen()
+    }
+    
+    @objc private func logoutButtonTapped() {
+        logout()
+    }
+    
+    private func cleanCookiesAndData() {
+        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+        
+        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+            records.forEach { record in
+                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+            }
+        }
+    }
+    
+    private func navigateToInitialScreen() {
+        DispatchQueue.main.async {
+            if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate {
+                sceneDelegate.switchToInitialViewController()
             }
         }
     }

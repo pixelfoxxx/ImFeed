@@ -27,37 +27,29 @@ final class ImagesListService {
             completion(.failure(CustomError.missingToken))
             return
         }
-
+        
         let url = URL(string: Self.baseURLString + "\(photoId)/like")!
         var request = URLRequest(url: url)
         request.httpMethod = isLike ? "POST" : "DELETE"
         request.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        print(request)
-
-        let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
-            if let error = error {
-                DispatchQueue.main.async {
-                    completion(.failure(error))
-                }
-                return
-            }
-            guard let httpResponse = response as? HTTPURLResponse, (httpResponse.statusCode == 200 || httpResponse.statusCode == 201) else {
-                DispatchQueue.main.async {
-                    completion(.failure(CustomError.invalidResponse))
-                }
-                return
-            }
-            DispatchQueue.main.async {
+        
+        struct EmptyResponse: Decodable {}
+        
+        let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<EmptyResponse, Error>) in
+            switch result {
+            case .success:
                 if let index = self?.photos.firstIndex(where: { $0.id == photoId }) {
                     self?.photos[index].isLiked = isLike
                     NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
                 }
                 completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
             }
         }
         task.resume()
     }
-
+    
     func fetchPhotosNextPage() {
         guard !isFetching else { return }
         
