@@ -37,6 +37,10 @@ final class SplashViewController: UIViewController {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
         checkToken()
     }
     
@@ -59,9 +63,10 @@ final class SplashViewController: UIViewController {
     
     // MARK: - Private Methods
     private func checkToken() {
-        DispatchQueue.main.async {
-            if self.tokenStorage.hasToken() {
-                self.switchToTabBarController()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let token = self.tokenStorage.token {
+                self.fetchProfile(token: token)
             } else {
                 self.showAuthScreen()
             }
@@ -99,13 +104,16 @@ final class SplashViewController: UIViewController {
     }
     
     private func fetchProfileImage(username: String) {
-        profileImageService.fetchProfileImageURL(username: username) { result in
+        profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
             DispatchQueue.main.async {
+                guard let _ = self else { return }
                 switch result {
                 case .success(let imageURL):
-                    print("Profile Image URL: \(imageURL)")
+                    // TODO: Handle successful fetching of the profile image URL
+                    break
                 case .failure(let error):
-                    print("Error fetching profile image URL: \(error)")
+                    // TODO: Handle error in fetching profile image URL
+                    break
                 }
             }
         }
@@ -134,8 +142,10 @@ final class SplashViewController: UIViewController {
 extension SplashViewController: OAuthViewControllerDelegate {
     func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String) {
         UIBlockingProgressHUD.show()
+        
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
+            
             self.fetchOAuthToken(code)
         }
     }

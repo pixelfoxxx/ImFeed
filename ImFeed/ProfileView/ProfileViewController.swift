@@ -175,18 +175,16 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
-        guard let token = tokenStorage.token else {
-            print("Error: No token available")
-            return
-        }
+        guard let token = tokenStorage.token else { return }
+        
         profileService.fetchProfile(with: token) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let profile):
                     self?.updateUIWithProfile(profile)
                     self?.fetchProfileImageURL(for: profile.username)
-                case .failure(let error):
-                    print("Error fetching profile: \(error)")
+                case .failure: break
+                    // TODO: Add error alert
                 }
             }
         }
@@ -198,8 +196,8 @@ final class ProfileViewController: UIViewController {
                 switch result {
                 case .success:
                     self?.updateAvatar()
-                case .failure(let error):
-                    print("Error while getting profile Image URL: \(error)")
+                case .failure: break
+                    // TODO: Add error alert
                 }
             }
         }

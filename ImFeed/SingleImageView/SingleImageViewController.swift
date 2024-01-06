@@ -9,6 +9,9 @@ final class SingleImageViewController: UIViewController {
     
     // MARK: - Properties
     var imageUrl: URL?
+    
+    private let scrollView = UIScrollView()
+    
     private let imageView: UIImageView = {
         let photoView = UIImageView()
         photoView.contentMode = .scaleAspectFill
@@ -22,8 +25,6 @@ final class SingleImageViewController: UIViewController {
         
         return button
     }()
-    
-    private let scrollView = UIScrollView()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
@@ -106,10 +107,7 @@ final class SingleImageViewController: UIViewController {
     }
     
     private func setSingleImage() {
-        guard let imageUrl = imageUrl else {
-            print("Invalid image URL")
-            return
-        }
+        guard let imageUrl = imageUrl else { return }
         
         UIBlockingProgressHUD.show()
         imageView.kf.setImage(
@@ -122,8 +120,7 @@ final class SingleImageViewController: UIViewController {
                     self.imageView.image = value.image
                 case .failure(let error):
                     UIBlockingProgressHUD.dismiss()
-                    AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось загрузить изображение")
-                    print("Error: \(error.localizedDescription)")
+                    AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось загрузить изображение, ошибка: \(error)")
                 }
             }
     }

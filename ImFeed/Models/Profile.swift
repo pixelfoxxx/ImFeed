@@ -8,13 +8,14 @@
 import Foundation
 
 struct Profile {
-    var username: String
-    var name: String
+    let username: String
+    let name: String
     var loginName: String {
         return "@\(username)"
     }
-    var bio: String
-    var profileImage: String
+    
+    let bio: String
+    let profileImage: String
     
     init(from profileResult: ProfileResult) {
         self.username = profileResult.username
