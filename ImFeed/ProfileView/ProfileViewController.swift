@@ -9,6 +9,9 @@ final class ProfileViewController: UIViewController {
     private let profileImageService = ProfileImageService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
     
+    private var animationLayers = Set<CALayer>()
+    private var gradientLayer: CAGradientLayer?
+    
     // MARK: - Properties
     let userNameLabel: UILabel = {
         let label = UILabel()
@@ -61,7 +64,7 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
-        startLoadingAnimation()
+        addGradientLayer()
         fetchUserProfile()
         addProfileImageObserver()
         logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
@@ -73,32 +76,18 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = profileImageService.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        avatarImageView.kf.setImage(with: url, placeholder: UIImage(named: "user_photo"))
+        avatarImageView.kf.setImage(with: url) { [weak self] result in
+            switch result {
+            case .success(_):
+                self?.removeGradientLayer()
+            case .failure(_):
+                break
+            }
+        }
     }
     
-    private func startLoadingAnimation() {
-        animateLabel(label: userNameLabel)
-        animateLabel(label: userLoginLabel)
-        animateLabel(label: descriptionLabel)
-    }
-    
-    private func animateLabel(label: UILabel) {
-        UIView.animate(withDuration: 0.2, delay: 0.2, options: [.autoreverse, .repeat], animations: {
-            label.alpha = 0.5
-        }, completion: nil)
-    }
-    
-    private func stopLoadingAnimation() {
-        userNameLabel.layer.removeAllAnimations()
-        userLoginLabel.layer.removeAllAnimations()
-        descriptionLabel.layer.removeAllAnimations()
-        userNameLabel.alpha = 1
-        userLoginLabel.alpha = 1
-        descriptionLabel.alpha = 1
-    }
-    
+    // MARK: - UI Methods
     private func updateUIWithProfile(_ profile: Profile) {
-        stopLoadingAnimation()
         userNameLabel.text = profile.name
         userLoginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
@@ -173,6 +162,41 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
+    // MARK: - Gradient & Loading animation
+    private func addGradientLayer() {
+        let gradient = CAGradientLayer()
+        gradient.frame = CGRect(origin: .zero, size: CGSize(width: 70, height: 70))
+        gradient.locations = [0, 0.1, 0.3]
+        gradient.colors = [
+            UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
+            UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
+            UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
+        ]
+        gradient.startPoint = CGPoint(x: 0, y: 0.5)
+        gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        gradient.cornerRadius = 35
+        gradient.masksToBounds = true
+        animationLayers.insert(gradient)
+        avatarImageView.layer.addSublayer(gradient)
+        userNameLabel.layer.addSublayer(gradient)
+        userLoginLabel.layer.addSublayer(gradient)
+        descriptionLabel.layer.addSublayer(gradient)
+        
+        let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
+        gradientChangeAnimation.duration = 1.0
+        gradientChangeAnimation.repeatCount = .infinity
+        gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
+        gradientChangeAnimation.toValue = [0, 0.8, 1]
+        gradient.add(gradientChangeAnimation, forKey: "locationsChange")
+        
+        self.gradientLayer = gradient
+    }
+    
+    private func removeGradientLayer() {
+        gradientLayer?.removeFromSuperlayer()
+        gradientLayer = nil
+    }
+    
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
         guard let token = tokenStorage.token else { return }
@@ -243,6 +267,11 @@ final class ProfileViewController: UIViewController {
                 guard let self = self else { return }
                 self.updateAvatar()
             }
-        updateAvatar()
+    }
+    
+    deinit {
+        if let observer = profileImageServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 }

@@ -108,10 +108,10 @@ final class SplashViewController: UIViewController {
             DispatchQueue.main.async {
                 guard let _ = self else { return }
                 switch result {
-                case .success(let imageURL):
+                case .success(_):
                     // TODO: Handle successful fetching of the profile image URL
                     break
-                case .failure(let error):
+                case .failure(_):
                     // TODO: Handle error in fetching profile image URL
                     break
                 }
