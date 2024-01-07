@@ -7,18 +7,14 @@
 
 import UIKit
 
-protocol AuthViewControllerDelegate: AnyObject {
-    func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String)
-}
-
 final class OAuthViewController: UIViewController {
     // MARK: - Properties
     private let showWebViewSegueIdentifier = "ShowWebView"
     
-    let oauthService = Auth2Service()
-    let tokenStorage = OAuth2TokenStorage()
+    private let oauthService = OAuth2Service()
+    private let tokenStorage = OAuth2TokenStorage.shared
     
-    weak var delegate: AuthViewControllerDelegate?
+    weak var delegate: OAuthViewControllerDelegate?
     
     // MARK: - Navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
