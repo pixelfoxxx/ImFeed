@@ -73,10 +73,12 @@ final class SingleImageViewController: UIViewController {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            imageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-            imageView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            imageView.widthAnchor.constraint(lessThanOrEqualTo: view.widthAnchor),
-            imageView.heightAnchor.constraint(lessThanOrEqualTo: view.heightAnchor)
+            imageView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            imageView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            imageView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            imageView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            imageView.centerXAnchor.constraint(equalTo: scrollView.centerXAnchor),
+            imageView.centerYAnchor.constraint(equalTo: scrollView.centerYAnchor),
         ])
     }
     
@@ -89,6 +91,10 @@ final class SingleImageViewController: UIViewController {
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
+    }
+    
+    private func updateScrollViewContentSize() {
+        scrollView.contentSize = imageView.frame.size
     }
     
     private func setupSharingButton() {
@@ -106,21 +112,24 @@ final class SingleImageViewController: UIViewController {
         scrollView.delegate = self
         scrollView.minimumZoomScale = 1.0
         scrollView.maximumZoomScale = 3.0
+        scrollView.zoomScale = 1.0
+        scrollView.contentInsetAdjustmentBehavior = .never
+        scrollView.contentSize = imageView.frame.size
     }
     
     private func showError() {
-            let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
-            
-            alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: { _ in
-                alert.dismiss(animated: true, completion: nil)
-            }))
-
-            alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { [weak self] _ in
-                self?.setSingleImage()
-            }))
-            
-            present(alert, animated: true, completion: nil)
-        }
+        let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: { _ in
+            alert.dismiss(animated: true, completion: nil)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { [weak self] _ in
+            self?.setSingleImage()
+        }))
+        
+        present(alert, animated: true, completion: nil)
+    }
     
     private func setSingleImage() {
         guard let photo = photo,
@@ -143,7 +152,7 @@ final class SingleImageViewController: UIViewController {
                         self?.showError()
                     }
                 }
-            case .failure(let error):
+            case .failure:
                 // If the low-resolution image fails to load, proceed with the high-resolution image
                 self?.imageView.kf.setImage(with: highResURL) { result in
                     UIBlockingProgressHUD.dismiss()
@@ -163,5 +172,28 @@ final class SingleImageViewController: UIViewController {
 extension SingleImageViewController: UIScrollViewDelegate {
     func viewForZooming(in scrollView: UIScrollView) -> UIView? {
         return imageView
+    }
+    
+    func scrollViewDidZoom(_ scrollView: UIScrollView) {
+        centerScrollViewContents()
+    }
+    
+    private func centerScrollViewContents() {
+        let boundsSize = scrollView.bounds.size
+        var contentsFrame = imageView.frame
+        
+        if contentsFrame.size.width < boundsSize.width {
+            contentsFrame.origin.x = (boundsSize.width - contentsFrame.size.width) / 2.0
+        } else {
+            contentsFrame.origin.x = 0.0
+        }
+        
+        if contentsFrame.size.height < boundsSize.height {
+            contentsFrame.origin.y = (boundsSize.height - contentsFrame.size.height) / 2.0
+        } else {
+            contentsFrame.origin.y = 0.0
+        }
+        
+        imageView.frame = contentsFrame
     }
 }
