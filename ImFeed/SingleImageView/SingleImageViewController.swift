@@ -8,7 +8,7 @@ fileprivate extension CGFloat {
 final class SingleImageViewController: UIViewController {
     
     // MARK: - Properties
-    var imageUrl: URL?
+    var photo: Photo?
     
     private let scrollView = UIScrollView()
     
@@ -53,6 +53,7 @@ final class SingleImageViewController: UIViewController {
         let activityViewController = UIActivityViewController(activityItems: items, applicationActivities: nil)
         present(activityViewController, animated: true, completion: nil)
     }
+    
     private func setupNavigationBar() {
         navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         navigationController?.navigationBar.shadowImage = UIImage()
@@ -65,6 +66,7 @@ final class SingleImageViewController: UIViewController {
     
     @objc func backAction() {
         dismiss(animated: true, completion: nil)
+        UIBlockingProgressHUD.dismiss()
     }
     
     private func setupImage() {
@@ -106,23 +108,54 @@ final class SingleImageViewController: UIViewController {
         scrollView.maximumZoomScale = 3.0
     }
     
+    private func showError() {
+            let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
+            
+            alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: { _ in
+                alert.dismiss(animated: true, completion: nil)
+            }))
+
+            alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { [weak self] _ in
+                self?.setSingleImage()
+            }))
+            
+            present(alert, animated: true, completion: nil)
+        }
+    
     private func setSingleImage() {
-        guard let imageUrl = imageUrl else { return }
+        guard let photo = photo,
+              let lowResURL = URL(string: photo.smallImageURL),
+              let highResURL = URL(string: photo.fullImageURL) else { return }
         
-        UIBlockingProgressHUD.show()
-        imageView.kf.setImage(
-            with: imageUrl,
-            options: [.transition(.fade(1))],
-            progressBlock: nil) { result in
-                switch result {
-                case .success(let value):
+        UIBlockingProgressHUD.showAndEnableUserInteraction()
+        
+        // Download the low-resolution image
+        KingfisherManager.shared.retrieveImage(with: lowResURL) { [weak self] result in
+            switch result {
+            case .success(let value):
+                // Use the low-resolution image as a placeholder
+                self?.imageView.kf.setImage(with: highResURL, placeholder: value.image) { result in
                     UIBlockingProgressHUD.dismiss()
-                    self.imageView.image = value.image
-                case .failure(let error):
+                    switch result {
+                    case .success(let highResValue):
+                        self?.imageView.image = highResValue.image
+                    case .failure:
+                        self?.showError()
+                    }
+                }
+            case .failure(let error):
+                // If the low-resolution image fails to load, proceed with the high-resolution image
+                self?.imageView.kf.setImage(with: highResURL) { result in
                     UIBlockingProgressHUD.dismiss()
-                    AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось загрузить изображение, ошибка: \(error)")
+                    switch result {
+                    case .success(let highResValue):
+                        self?.imageView.image = highResValue.image
+                    case .failure:
+                        self?.showError()
+                    }
                 }
             }
+        }
     }
 }
 

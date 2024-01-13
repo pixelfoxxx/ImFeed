@@ -40,28 +40,26 @@ final class ImagesListViewController: UIViewController {
     }
     
     private func addImageListObserver() {
-        NotificationCenter.default
-            .addObserver(
+            NotificationCenter.default.addObserver(
                 forName: ImagesListService.didChangeNotification,
                 object: nil,
-                queue: .main
-            ) { [weak self] _ in
-                guard let self = self else { return }
-                updateTableViewAnimated()
+                queue: .main) { [weak self] _ in
+                    self?.updateTableViewAnimated()
             }
-    }
+        }
+
+        deinit {
+            NotificationCenter.default.removeObserver(self)
+        }
     
     private func updateTableViewAnimated() {
         let oldCount = photos.count
         let newCount = imagesListService.photos.count
         photos = imagesListService.photos
-        if oldCount != newCount {
-            tableView.performBatchUpdates {
-                let indexPaths = (oldCount..<newCount).map { i in
-                    IndexPath(row: i, section: 0)
-                }
-                tableView.insertRows(at: indexPaths, with: .automatic)
-            } completion: { _ in }
+
+        tableView.performBatchUpdates {
+            let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
+            tableView.insertRows(at: indexPaths, with: .automatic)
         }
     }
 }
@@ -96,12 +94,12 @@ extension ImagesListViewController: UITableViewDataSource {
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let photo = photos[indexPath.row]
-        showSingleImageViewController(with: URL(string: photo.fullImageURL))
+        showSingleImageViewController(with: photo)
     }
     
-    private func showSingleImageViewController(with imageUrl: URL?) {
+    private func showSingleImageViewController(with photo: Photo) {
         let singleImageVC = SingleImageViewController()
-        singleImageVC.imageUrl = imageUrl
+        singleImageVC.photo = photo
         let navigationController = UINavigationController(rootViewController: singleImageVC)
         navigationController.modalPresentationStyle = .fullScreen
         present(navigationController, animated: true, completion: nil)

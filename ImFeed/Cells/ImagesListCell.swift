@@ -46,13 +46,12 @@ final class ImagesListCell: UITableViewCell {
         delegate?.imageListCellDidTapLike(self)
     }
     
-    
     // MARK: - Private Methods
     func configure(with photo: Photo, dateFormatter: DateFormatter) {
         cellImageView.kf.indicatorType = .activity
         cellImageView.kf.setImage(with: URL(string: photo.smallImageURL), placeholder: UIImage(named: "loading_stub"))
         
-        dateLabel.text = dateFormatter.string(from: Date())
+        dateLabel.text = dateFormatter.string(from: photo.createdAtDate)
         let isLiked = photo.isLiked
         let likeImage = isLiked ? UIImage(named: "like_button_on") : UIImage(named: "like_button_off")
         likeButton.setImage(likeImage, for: .normal)

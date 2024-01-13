@@ -11,6 +11,7 @@ struct Photo {
     let id: String
     let size: CGSize
     let createdAt: String
+    let createdAtDate: Date
     let welcomeDescription: String?
     let thumbImageURL: String
     let rawImageURL: String
@@ -25,6 +26,13 @@ extension Photo {
         self.id = result.id
         self.size = CGSize(width: result.width, height: result.height)
         self.createdAt = result.createdAt
+        
+        if let date = DateFormatter.iso8601.date(from: result.createdAt) {
+            self.createdAtDate = date
+        } else {
+            self.createdAtDate = Date()
+        }
+        
         self.welcomeDescription = result.description
         self.thumbImageURL = result.urls.thumb
         self.rawImageURL = result.urls.raw
@@ -35,3 +43,10 @@ extension Photo {
     }
 }
 
+extension DateFormatter {
+    static let iso8601: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        return formatter
+    }()
+}

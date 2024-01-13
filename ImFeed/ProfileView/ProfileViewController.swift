@@ -17,8 +17,6 @@ final class ProfileViewController: UIViewController {
         let label = UILabel()
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
-        label.numberOfLines = 0
-        label.text = "Loading ..."
         
         return label
     }()
@@ -27,8 +25,6 @@ final class ProfileViewController: UIViewController {
         let label = UILabel()
         label.textColor = .ypGray
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.numberOfLines = 0
-        label.text = "Loading ..."
         
         return label
     }()
@@ -37,8 +33,6 @@ final class ProfileViewController: UIViewController {
         let label = UILabel()
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.numberOfLines = 0
-        label.text = "Loading ..."
         
         return label
     }()
@@ -65,9 +59,15 @@ final class ProfileViewController: UIViewController {
         configureSubviews()
         configureConstraints()
         addGradientLayer()
+        addGradientToLabels()
         fetchUserProfile()
         addProfileImageObserver()
         logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setGradientFrames()
     }
     
     // MARK: - Private methods
@@ -164,23 +164,41 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - Gradient & Loading animation
     private func addGradientLayer() {
+        let gradient = createGradientLayer()
+        gradientLayer = gradient
+        avatarImageView.layer.insertSublayer(gradient, at: 0)
+    }
+    
+    private func addGradientToLabels() {
+        [userNameLabel, userLoginLabel, descriptionLabel].forEach { label in
+            let gradient = createGradientLayer()
+            label.layer.insertSublayer(gradient, at: 0)
+            animationLayers.insert(gradient)
+        }
+    }
+    
+    private func removeGradientLayer() {
+        gradientLayer?.removeFromSuperlayer()
+        gradientLayer = nil
+    }
+    
+    private func removeGradientsFromLabels() {
+        animationLayers.forEach { $0.removeFromSuperlayer() }
+        animationLayers.removeAll()
+    }
+    
+    private func createGradientLayer() -> CAGradientLayer {
         let gradient = CAGradientLayer()
-        gradient.frame = CGRect(origin: .zero, size: CGSize(width: 70, height: 70))
-        gradient.locations = [0, 0.1, 0.3]
         gradient.colors = [
             UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
             UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
             UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
         ]
+        gradient.locations = [0, 0.1, 0.3]
         gradient.startPoint = CGPoint(x: 0, y: 0.5)
         gradient.endPoint = CGPoint(x: 1, y: 0.5)
-        gradient.cornerRadius = 35
+        gradient.cornerRadius = 9
         gradient.masksToBounds = true
-        animationLayers.insert(gradient)
-        avatarImageView.layer.addSublayer(gradient)
-        userNameLabel.layer.addSublayer(gradient)
-        userLoginLabel.layer.addSublayer(gradient)
-        descriptionLabel.layer.addSublayer(gradient)
         
         let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
         gradientChangeAnimation.duration = 1.0
@@ -189,19 +207,26 @@ final class ProfileViewController: UIViewController {
         gradientChangeAnimation.toValue = [0, 0.8, 1]
         gradient.add(gradientChangeAnimation, forKey: "locationsChange")
         
-        self.gradientLayer = gradient
+        return gradient
     }
     
-    private func removeGradientLayer() {
-        gradientLayer?.removeFromSuperlayer()
-        gradientLayer = nil
+    private func setGradientFrames() {
+        gradientLayer?.frame = avatarImageView.bounds
+        gradientLayer?.cornerRadius = avatarImageView.frame.height / 2
+        
+        for label in [userNameLabel, userLoginLabel, descriptionLabel] {
+            let gradientLayer = animationLayers.first(where: { $0.superlayer == label.layer })
+            gradientLayer?.frame = label.bounds
+        }
     }
     
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
+        addGradientToLabels()
         guard let token = tokenStorage.token else { return }
         
         profileService.fetchProfile(with: token) { [weak self] result in
+            self?.removeGradientsFromLabels()
             DispatchQueue.main.async {
                 switch result {
                 case .success(let profile):
@@ -228,14 +253,28 @@ final class ProfileViewController: UIViewController {
     }
     
     // MARK: - Profile logout
+    @objc private func logoutButtonTapped() {
+        presentLogoutConfirmation()
+    }
+    
+    private func presentLogoutConfirmation() {
+        let alertController = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти? 😢", preferredStyle: .alert)
+        let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
+            self?.logout()
+        }
+        
+        let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+        
+        present(alertController, animated: true)
+    }
+    
     private func logout() {
         tokenStorage.clearToken()
         cleanCookiesAndData()
         navigateToInitialScreen()
-    }
-    
-    @objc private func logoutButtonTapped() {
-        logout()
     }
     
     private func cleanCookiesAndData() {
