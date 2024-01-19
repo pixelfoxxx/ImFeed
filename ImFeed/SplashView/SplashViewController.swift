@@ -11,7 +11,6 @@ import ProgressHUD
 final class SplashViewController: UIViewController {
     
     // MARK: - Properties
-    
     private let oauthService = OAuth2Service()
     private let profileService = ProfileService()
     private let tokenStorage = OAuth2TokenStorage.shared
@@ -21,7 +20,7 @@ final class SplashViewController: UIViewController {
         .lightContent
     }
     
-    let splashLogoImage: UIImageView = {
+    private let splashLogoImage: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "YP Logo")
@@ -38,6 +37,10 @@ final class SplashViewController: UIViewController {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(true)
         checkToken()
     }
     
@@ -60,9 +63,10 @@ final class SplashViewController: UIViewController {
     
     // MARK: - Private Methods
     private func checkToken() {
-        DispatchQueue.main.async {
-            if self.tokenStorage.hasToken() {
-                self.switchToTabBarController()
+        DispatchQueue.main.async { [weak self] in
+            guard let self = self else { return }
+            if let token = self.tokenStorage.token {
+                self.fetchProfile(token: token)
             } else {
                 self.showAuthScreen()
             }
@@ -100,13 +104,16 @@ final class SplashViewController: UIViewController {
     }
     
     private func fetchProfileImage(username: String) {
-        profileImageService.fetchProfileImageURL(username: username) { result in
+        profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
             DispatchQueue.main.async {
+                guard let _ = self else { return }
                 switch result {
-                case .success(let imageURL):
-                    print("Profile Image URL: \(imageURL)")
-                case .failure(let error):
-                    print("Error fetching profile image URL: \(error)")
+                case .success(_):
+                    // TODO: Handle successful fetching of the profile image URL
+                    break
+                case .failure(_):
+                    // TODO: Handle error in fetching profile image URL
+                    break
                 }
             }
         }
@@ -129,15 +136,16 @@ final class SplashViewController: UIViewController {
             splashLogoImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
         ])
     }
-    
 }
 
 // MARK: - AuthViewControllerDelegate
 extension SplashViewController: OAuthViewControllerDelegate {
     func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String) {
         UIBlockingProgressHUD.show()
+        
         dismiss(animated: true) { [weak self] in
             guard let self = self else { return }
+            
             self.fetchOAuthToken(code)
         }
     }

@@ -1,5 +1,6 @@
 import UIKit
 import Kingfisher
+import WebKit
 
 final class ProfileViewController: UIViewController {
     
@@ -8,13 +9,15 @@ final class ProfileViewController: UIViewController {
     private let profileImageService = ProfileImageService.shared
     private var profileImageServiceObserver: NSObjectProtocol?
     
+    private var animationLayers = Set<CALayer>()
+    private var gradientLayer: CAGradientLayer?
+    
     // MARK: - Properties
     let userNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 23, weight: .bold)
-        label.numberOfLines = 0
-        label.text = "Loading ..."
+        
         return label
     }()
     
@@ -22,8 +25,7 @@ final class ProfileViewController: UIViewController {
         let label = UILabel()
         label.textColor = .ypGray
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.numberOfLines = 0
-        label.text = "Loading ..."
+        
         return label
     }()
     
@@ -31,8 +33,7 @@ final class ProfileViewController: UIViewController {
         let label = UILabel()
         label.textColor = .ypWhite
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
-        label.numberOfLines = 0
-        label.text = "Loading ..."
+        
         return label
     }()
     
@@ -40,6 +41,7 @@ final class ProfileViewController: UIViewController {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
         imageView.image = UIImage(named: "user_photo")
+        
         return imageView
     }()
     
@@ -47,6 +49,7 @@ final class ProfileViewController: UIViewController {
         let button = UIButton()
         button.setImage(UIImage(systemName: "ipad.and.arrow.forward"), for: .normal)
         button.tintColor = .ypRed
+        
         return button
     }()
     
@@ -55,9 +58,16 @@ final class ProfileViewController: UIViewController {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
-        startLoadingAnimation()
+        addGradientLayer()
+        addGradientToLabels()
         fetchUserProfile()
         addProfileImageObserver()
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
+    }
+    
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        setGradientFrames()
     }
     
     // MARK: - Private methods
@@ -66,32 +76,18 @@ final class ProfileViewController: UIViewController {
             let profileImageURL = profileImageService.avatarURL,
             let url = URL(string: profileImageURL)
         else { return }
-        avatarImageView.kf.setImage(with: url, placeholder: UIImage(named: "user_photo"))
+        avatarImageView.kf.setImage(with: url) { [weak self] result in
+            switch result {
+            case .success(_):
+                self?.removeGradientLayer()
+            case .failure(_):
+                break
+            }
+        }
     }
     
-    private func startLoadingAnimation() {
-        animateLabel(label: userNameLabel)
-        animateLabel(label: userLoginLabel)
-        animateLabel(label: descriptionLabel)
-    }
-    
-    private func animateLabel(label: UILabel) {
-        UIView.animate(withDuration: 0.2, delay: 0.2, options: [.autoreverse, .repeat], animations: {
-            label.alpha = 0.5
-        }, completion: nil)
-    }
-    
-    private func stopLoadingAnimation() {
-        userNameLabel.layer.removeAllAnimations()
-        userLoginLabel.layer.removeAllAnimations()
-        descriptionLabel.layer.removeAllAnimations()
-        userNameLabel.alpha = 1
-        userLoginLabel.alpha = 1
-        descriptionLabel.alpha = 1
-    }
-    
+    // MARK: - UI Methods
     private func updateUIWithProfile(_ profile: Profile) {
-        stopLoadingAnimation()
         userNameLabel.text = profile.name
         userLoginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
@@ -166,20 +162,79 @@ final class ProfileViewController: UIViewController {
         ])
     }
     
+    // MARK: - Gradient & Loading animation
+    private func addGradientLayer() {
+        let gradient = createGradientLayer()
+        gradientLayer = gradient
+        avatarImageView.layer.insertSublayer(gradient, at: 0)
+    }
+    
+    private func addGradientToLabels() {
+        [userNameLabel, userLoginLabel, descriptionLabel].forEach { label in
+            let gradient = createGradientLayer()
+            label.layer.insertSublayer(gradient, at: 0)
+            animationLayers.insert(gradient)
+        }
+    }
+    
+    private func removeGradientLayer() {
+        gradientLayer?.removeFromSuperlayer()
+        gradientLayer = nil
+    }
+    
+    private func removeGradientsFromLabels() {
+        animationLayers.forEach { $0.removeFromSuperlayer() }
+        animationLayers.removeAll()
+    }
+    
+    private func createGradientLayer() -> CAGradientLayer {
+        let gradient = CAGradientLayer()
+        gradient.colors = [
+            UIColor(red: 0.682, green: 0.686, blue: 0.706, alpha: 1).cgColor,
+            UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
+            UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
+        ]
+        
+        gradient.locations = [0, 0.1, 0.3]
+        gradient.startPoint = CGPoint(x: 0, y: 0.5)
+        gradient.endPoint = CGPoint(x: 1, y: 0.5)
+        gradient.cornerRadius = 9
+        gradient.masksToBounds = true
+        
+        let gradientChangeAnimation = CABasicAnimation(keyPath: "locations")
+        gradientChangeAnimation.duration = 1.0
+        gradientChangeAnimation.repeatCount = .infinity
+        gradientChangeAnimation.fromValue = [0, 0.1, 0.3]
+        gradientChangeAnimation.toValue = [0, 0.8, 1]
+        gradient.add(gradientChangeAnimation, forKey: "locationsChange")
+        
+        return gradient
+    }
+    
+    private func setGradientFrames() {
+        gradientLayer?.frame = avatarImageView.bounds
+        gradientLayer?.cornerRadius = avatarImageView.frame.height / 2
+        
+        for label in [userNameLabel, userLoginLabel, descriptionLabel] {
+            let gradientLayer = animationLayers.first(where: { $0.superlayer == label.layer })
+            gradientLayer?.frame = label.bounds
+        }
+    }
+    
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
-        guard let token = tokenStorage.token else {
-            print("Error: No token available")
-            return
-        }
+        addGradientToLabels()
+        guard let token = tokenStorage.token else { return }
+        
         profileService.fetchProfile(with: token) { [weak self] result in
+            self?.removeGradientsFromLabels()
             DispatchQueue.main.async {
                 switch result {
                 case .success(let profile):
                     self?.updateUIWithProfile(profile)
                     self?.fetchProfileImageURL(for: profile.username)
-                case .failure(let error):
-                    print("Error fetching profile: \(error)")
+                case .failure: break
+                    // TODO: Add error alert
                 }
             }
         }
@@ -191,9 +246,52 @@ final class ProfileViewController: UIViewController {
                 switch result {
                 case .success:
                     self?.updateAvatar()
-                case .failure(let error):
-                    print("Error while getting profile Image URL: \(error)")
+                case .failure: break
+                    // TODO: Add error alert
                 }
+            }
+        }
+    }
+    
+    // MARK: - Profile logout
+    @objc private func logoutButtonTapped() {
+        presentLogoutConfirmation()
+    }
+    
+    private func presentLogoutConfirmation() {
+        let alertController = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти? 😢", preferredStyle: .alert)
+        let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
+            self?.logout()
+        }
+        
+        let noAction = UIAlertAction(title: "Нет", style: .cancel)
+        
+        alertController.addAction(yesAction)
+        alertController.addAction(noAction)
+        
+        present(alertController, animated: true)
+    }
+    
+    private func logout() {
+        tokenStorage.clearToken()
+        cleanCookiesAndData()
+        navigateToInitialScreen()
+    }
+    
+    private func cleanCookiesAndData() {
+        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
+        
+        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
+            records.forEach { record in
+                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
+            }
+        }
+    }
+    
+    private func navigateToInitialScreen() {
+        DispatchQueue.main.async {
+            if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate {
+                sceneDelegate.switchToInitialViewController()
             }
         }
     }
@@ -209,6 +307,11 @@ final class ProfileViewController: UIViewController {
                 guard let self = self else { return }
                 self.updateAvatar()
             }
-        updateAvatar()
+    }
+    
+    deinit {
+        if let observer = profileImageServiceObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 }

@@ -8,21 +8,21 @@
 import Foundation
 
 struct ProfileResult: Codable {
-    var id: String
-    var username: String
-    var name: String
-    var firstName: String
-    var lastName: String?
-    var instagramUsername: String?
-    var twitterUsername: String?
-    var portfolioUrl: String?
-    var bio: String?
-    var location: String?
-    var totalLikes: Int
-    var totalPhotos: Int
-    var totalCollections: Int
-    var profileImage: ProfileImage
-    var links: UserLinks
+    let id: String
+    let username: String
+    let name: String
+    let firstName: String
+    let lastName: String?
+    let instagramUsername: String?
+    let twitterUsername: String?
+    let portfolioUrl: String?
+    let bio: String?
+    let location: String?
+    let totalLikes: Int
+    let totalPhotos: Int
+    let totalCollections: Int
+    let profileImage: ProfileImage
+    let links: UserLinks
     
     enum CodingKeys: String, CodingKey {
         case id, username, name, bio, location
@@ -37,20 +37,4 @@ struct ProfileResult: Codable {
         case profileImage = "profile_image"
         case links
     }
-}
-
-struct ProfileImage: Codable {
-    var small: String
-    var medium: String
-    var large: String
-}
-
-struct UserLinks: Codable {
-    var `self`: String
-    var html: String
-    var photos: String
-    var likes: String
-    var portfolio: String
-    var following: String
-    var followers: String
 }
