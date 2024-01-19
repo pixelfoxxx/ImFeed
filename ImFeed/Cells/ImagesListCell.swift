@@ -10,9 +10,9 @@ final class ImagesListCell: UITableViewCell {
     static let reuseIdentifier = "ImagesListCell"
     
     // MARK: - IBOutlets
-    @IBOutlet weak var cellImageView: UIImageView!
-    @IBOutlet weak var likeButton: UIButton!
-    @IBOutlet weak var dateLabel: UILabel!
+    @IBOutlet private weak var cellImageView: UIImageView!
+    @IBOutlet private weak var likeButton: UIButton!
+    @IBOutlet private weak var dateLabel: UILabel!
     
     weak var delegate: ImagesListCellDelegate?
     

@@ -194,6 +194,7 @@ final class ProfileViewController: UIViewController {
             UIColor(red: 0.531, green: 0.533, blue: 0.553, alpha: 1).cgColor,
             UIColor(red: 0.431, green: 0.433, blue: 0.453, alpha: 1).cgColor
         ]
+        
         gradient.locations = [0, 0.1, 0.3]
         gradient.startPoint = CGPoint(x: 0, y: 0.5)
         gradient.endPoint = CGPoint(x: 1, y: 0.5)

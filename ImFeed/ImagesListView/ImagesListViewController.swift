@@ -6,7 +6,7 @@ final class ImagesListViewController: UIViewController {
     private var photos: [Photo] = []
     private let imagesListService = ImagesListService()
     
-    @IBOutlet weak var tableView: UITableView!
+    @IBOutlet private weak var tableView: UITableView!
     
     // MARK: - Date Formatter
     private lazy var dateFormatter: DateFormatter = {
@@ -40,23 +40,23 @@ final class ImagesListViewController: UIViewController {
     }
     
     private func addImageListObserver() {
-            NotificationCenter.default.addObserver(
-                forName: ImagesListService.didChangeNotification,
-                object: nil,
-                queue: .main) { [weak self] _ in
-                    self?.updateTableViewAnimated()
+        NotificationCenter.default.addObserver(
+            forName: ImagesListService.didChangeNotification,
+            object: nil,
+            queue: .main) { [weak self] _ in
+                self?.updateTableViewAnimated()
             }
-        }
-
-        deinit {
-            NotificationCenter.default.removeObserver(self)
-        }
+    }
+    
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
     
     private func updateTableViewAnimated() {
         let oldCount = photos.count
         let newCount = imagesListService.photos.count
         photos = imagesListService.photos
-
+        
         tableView.performBatchUpdates {
             let indexPaths = (oldCount..<newCount).map { IndexPath(row: $0, section: 0) }
             tableView.insertRows(at: indexPaths, with: .automatic)
@@ -93,8 +93,7 @@ extension ImagesListViewController: UITableViewDataSource {
 // MARK: - UITableViewDelegate
 extension ImagesListViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        let photo = photos[indexPath.row]
-        showSingleImageViewController(with: photo)
+        showSingleImageViewController(with: photos[indexPath.row])
     }
     
     private func showSingleImageViewController(with photo: Photo) {
