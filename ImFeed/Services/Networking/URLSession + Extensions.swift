@@ -14,23 +14,30 @@ extension URLSession {
     ) -> URLSessionTask {
         let task = dataTask(with: request) { data, response, error in
             DispatchQueue.main.async {
-                if let error = error {
-                    completion(.failure(error))
+                if let urlError = error as? URLError {
+                    completion(.failure(CustomError.networkError(urlError)))
                     return
                 }
 
-                guard let httpResponse = response as? HTTPURLResponse,
-                      200...299 ~= httpResponse.statusCode,
-                      let data = data else {
-                    completion(.failure(URLError(.badServerResponse)))
+                guard let httpResponse = response as? HTTPURLResponse else {
+                    completion(.failure(CustomError.invalidResponse))
                     return
                 }
-
-                do {
-                    let decodedObject = try JSONDecoder().decode(T.self, from: data)
-                    completion(.success(decodedObject))
-                } catch {
-                    completion(.failure(error))
+                
+                switch httpResponse.statusCode {
+                case 200...299:
+                    guard let data = data else {
+                        completion(.failure(CustomError.invalidResponse))
+                        return
+                    }
+                    do {
+                        let decodedObject = try JSONDecoder().decode(T.self, from: data)
+                        completion(.success(decodedObject))
+                    } catch {
+                        completion(.failure(CustomError.decodingError))
+                    }
+                default:
+                    completion(.failure(CustomError.serverError("Status code: \(httpResponse.statusCode)")))
                 }
             }
         }

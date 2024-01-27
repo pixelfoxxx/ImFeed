@@ -38,16 +38,23 @@ final class ImagesListService {
         let task = URLSession.shared.objectTask(for: request) { [weak self] (result: Result<EmptyResponse, Error>) in
             switch result {
             case .success:
-                if let index = self?.photos.firstIndex(where: { $0.id == photoId }) {
-                    self?.photos[index].isLiked = isLike
-                    NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
-                }
+                // Success logic
+                self?.updateLikeStatus(for: photoId, isLiked: isLike)
                 completion(.success(()))
             case .failure(let error):
+                // Error handling
                 completion(.failure(error))
             }
         }
         task.resume()
+    }
+    
+    // Helper function to update like status
+    private func updateLikeStatus(for photoId: String, isLiked: Bool) {
+        if let index = self.photos.firstIndex(where: { $0.id == photoId }) {
+            self.photos[index].isLiked = isLiked
+            NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
+        }
     }
     
     func fetchPhotosNextPage() {

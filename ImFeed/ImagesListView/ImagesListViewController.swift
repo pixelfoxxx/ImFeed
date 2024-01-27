@@ -121,14 +121,26 @@ extension ImagesListViewController: ImagesListCellDelegate {
         
         UIBlockingProgressHUD.show()
         imagesListService.changeLike(photoId: photo.id, isLike: isLike) { [weak self] result in
-            switch result {
-            case .success():
-                self?.photos[indexPath.row].isLiked = isLike
-                self?.tableView.reloadRows(at: [indexPath], with: .none)
-                UIBlockingProgressHUD.dismiss()
-            case .failure(let error):
-                print("Error changing like status: \(error)")
-                UIBlockingProgressHUD.dismiss()
+            DispatchQueue.main.async {
+                switch result {
+                case .success():
+                    self?.photos[indexPath.row].isLiked = isLike
+                    self?.tableView.reloadRows(at: [indexPath], with: .none)
+                    UIBlockingProgressHUD.dismiss()
+                case .failure(let error):
+                    UIBlockingProgressHUD.dismiss()
+                    
+                    let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
+                    
+                    alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: nil))
+                    
+                    alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { [weak self] _ in
+                        guard let strongSelf = self else { return }
+                        strongSelf.imageListCellDidTapLike(cell)
+                    }))
+                    
+                    self?.present(alert, animated: true, completion: nil)
+                }
             }
         }
     }
