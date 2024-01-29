@@ -7,16 +7,11 @@
 
 import UIKit
 
-fileprivate extension CGFloat {
-    static let sighInButtonHeight: CGFloat = 48
-    static let insets: CGFloat = 16
-    static let bottomInsets: CGFloat = 90
-    static let logoSize: CGFloat = 60
-    static let cornerRadius: CGFloat = 16
+protocol OAuthViewControllerDelegate: AnyObject {
+    func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String)
 }
 
 final class OAuthViewController: UIViewController {
-    
     // MARK: - Properties
     weak var delegate: OAuthViewControllerDelegate?
     
@@ -101,4 +96,12 @@ extension OAuthViewController: WebViewControllerDelegate {
     func webViewViewControllerDidCancel(_ vc: WebViewViewController) {
         dismiss(animated: true)
     }
+}
+
+fileprivate extension CGFloat {
+    static let sighInButtonHeight: CGFloat = 48
+    static let insets: CGFloat = 16
+    static let bottomInsets: CGFloat = 90
+    static let logoSize: CGFloat = 60
+    static let cornerRadius: CGFloat = 16
 }
