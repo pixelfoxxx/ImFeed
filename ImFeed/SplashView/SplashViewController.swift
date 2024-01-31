@@ -44,6 +44,24 @@ final class SplashViewController: UIViewController {
         checkToken()
     }
     
+    // MARK: - UI Methods
+    private func configureConstraints() {
+        configureSplashLogoImage()
+    }
+    
+    private func configureSubviews() {
+        view.addSubview(splashLogoImage)
+        view.backgroundColor = .ypBlack
+    }
+    
+    private func configureSplashLogoImage() {
+        splashLogoImage.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            splashLogoImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            splashLogoImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+        ])
+    }
+    
     // MARK: - Navigation
     private func switchToTabBarController() {
         guard let window = UIApplication.shared.windows.first else {
@@ -55,7 +73,7 @@ final class SplashViewController: UIViewController {
     }
     
     private func showAuthScreen() {
-        let authViewController = OAuthViewController()
+        let authViewController = AuthViewController(delegate: self)
         authViewController.delegate = self
         authViewController.modalPresentationStyle = .fullScreen
         present(authViewController, animated: true, completion: nil)
@@ -118,29 +136,11 @@ final class SplashViewController: UIViewController {
             }
         }
     }
-    
-    // MARK: - UI Methods
-    private func configureConstraints() {
-        configureSplashLogoImage()
-    }
-    
-    private func configureSubviews() {
-        view.addSubview(splashLogoImage)
-        view.backgroundColor = .ypBlack
-    }
-    
-    private func configureSplashLogoImage() {
-        splashLogoImage.translatesAutoresizingMaskIntoConstraints = false
-        NSLayoutConstraint.activate([
-            splashLogoImage.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            splashLogoImage.centerYAnchor.constraint(equalTo: view.centerYAnchor)
-        ])
-    }
 }
 
 // MARK: - AuthViewControllerDelegate
-extension SplashViewController: OAuthViewControllerDelegate {
-    func authViewController(_ vc: OAuthViewController, didAuthenticateWithCode code: String) {
+extension SplashViewController: AuthViewControllerDelegate {
+    func authViewController(_ vc: AuthViewProtocol, didAuthenticateWithCode code: String) {
         UIBlockingProgressHUD.show()
         
         dismiss(animated: true) { [weak self] in
