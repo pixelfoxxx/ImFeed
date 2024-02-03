@@ -8,7 +8,7 @@
 import UIKit
 import ProgressHUD
 
-final class SplashViewController: UIViewController {
+final class SplashViewController: UIViewController, UITabBarControllerDelegate {
     
     // MARK: - Properties
     private let oauthService = OAuth2Service()
@@ -65,12 +65,10 @@ final class SplashViewController: UIViewController {
     
     // MARK: - Navigation
     private func switchToTabBarController() {
-        guard let window = UIApplication.shared.windows.first else {
-            fatalError("Invalid Configuration")
-        }
-        let tabBarController = UIStoryboard(name: "Main", bundle: .main)
-            .instantiateViewController(withIdentifier: "TabBarViewController")
-        window.rootViewController = tabBarController
+        let tabBarViewController = TabBarViewController()
+        tabBarViewController.delegate = self
+        tabBarViewController.modalPresentationStyle = .fullScreen
+        present(tabBarViewController, animated: true, completion: nil)
     }
     
     private func showAuthScreen() {
@@ -98,9 +96,9 @@ final class SplashViewController: UIViewController {
             switch result {
             case .success(let token):
                 self.fetchProfile(token: token)
-            case .failure:
+            case .failure(let error):
                 UIBlockingProgressHUD.dismiss()
-                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось войти в систему")
+                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Ошибка: \(error)")
                 break
             }
         }
@@ -114,9 +112,9 @@ final class SplashViewController: UIViewController {
                 self.fetchProfileImage(username: profile.username)
                 UIBlockingProgressHUD.dismiss()
                 self.switchToTabBarController()
-            case .failure:
+            case .failure(let error):
                 UIBlockingProgressHUD.dismiss()
-                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Не удалось войти в систему")
+                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Ошибка: \(error) ")
                 break
             }
         }

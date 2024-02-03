@@ -56,13 +56,9 @@ final class ProfileViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureSubviews()
-        configureConstraints()
-        addGradientLayer()
-        addGradientToLabels()
+        setupView()
         fetchUserProfile()
         addProfileImageObserver()
-        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
     }
     
     override func viewDidLayoutSubviews() {
@@ -71,6 +67,13 @@ final class ProfileViewController: UIViewController {
     }
     
     // MARK: - Private methods
+    private func setupView(){
+        configureSubviews()
+        configureConstraints()
+        addGradientLayer()
+        addGradientToLabels()
+    }
+    
     private func updateAvatar() {
         guard
             let profileImageURL = profileImageService.avatarURL,
@@ -160,6 +163,8 @@ final class ProfileViewController: UIViewController {
             logoutButton.centerYAnchor.constraint(equalTo: avatarImageView.centerYAnchor),
             logoutButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16)
         ])
+        
+        logoutButton.addTarget(self, action: #selector(logoutButtonTapped), for: .touchUpInside)
     }
     
     // MARK: - Gradient & Loading animation

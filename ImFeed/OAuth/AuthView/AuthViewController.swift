@@ -29,6 +29,7 @@ final class AuthViewController: UIViewController {
         let button = UIButton()
         button.clipsToBounds = true
         button.layer.cornerRadius = .cornerRadius
+        button.accessibilityIdentifier = "Authenticate"
         return button
     }()
     
@@ -38,8 +39,8 @@ final class AuthViewController: UIViewController {
     
     // MARK: - Initialisation
     init(delegate: AuthViewControllerDelegate, authConfiguration: AuthConfiguration) {
-        self.delegate = delegate
         super.init(nibName: nil, bundle: nil)
+        self.delegate = delegate
         self.presenter = AuthPresenter(view: self, authConfiguration: authConfiguration)
     }
     
