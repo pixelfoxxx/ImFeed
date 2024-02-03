@@ -25,9 +25,14 @@ final class WebViewViewController: UIViewController {
     weak var delegate: WebViewControllerDelegate?
     var presenter: WebViewPresenter?
     
-    private var estimatedProgressObservation: NSKeyValueObservation?
-    private var webView = WKWebView()
     private var progressView = UIProgressView()
+    private var estimatedProgressObservation: NSKeyValueObservation?
+    
+    private lazy var webView: WKWebView = {
+        let webView = WKWebView()
+        webView.accessibilityIdentifier = "UnsplashWebView"
+        return webView
+    }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {

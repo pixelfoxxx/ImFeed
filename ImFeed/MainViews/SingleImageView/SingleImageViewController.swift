@@ -14,6 +14,7 @@ final class SingleImageViewController: UIViewController {
     
     private let imageView: UIImageView = {
         let photoView = UIImageView()
+        photoView.restorationIdentifier = "SingleImage"
         photoView.contentMode = .scaleAspectFill
         
         return photoView
@@ -56,9 +57,11 @@ final class SingleImageViewController: UIViewController {
     
     private func setupNavigationBar() {
         let backItem = UIBarButtonItem(image: UIImage(systemName: "chevron.backward"), style: .plain, target: self, action: #selector(backAction))
-        backItem.tintColor = .white
-        self.navigationItem.leftBarButtonItem = backItem
         
+        backItem.tintColor = .white
+        backItem.accessibilityIdentifier = "BackButton"
+        
+        self.navigationItem.leftBarButtonItem = backItem
         navigationController?.navigationBar.setBackgroundImage(UIImage(), for: .default)
         navigationController?.navigationBar.shadowImage = UIImage()
         navigationController?.navigationBar.isTranslucent = true
@@ -117,20 +120,7 @@ final class SingleImageViewController: UIViewController {
         scrollView.contentSize = imageView.frame.size
     }
     
-    private func showError() {
-        let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
-        
-        alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: { _ in
-            alert.dismiss(animated: true, completion: nil)
-        }))
-        
-        alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { [weak self] _ in
-            self?.setSingleImage()
-        }))
-        
-        present(alert, animated: true, completion: nil)
-    }
-    
+    // MARK: - Setting Single Image
     private func setSingleImage() {
         guard let photo = photo,
               let lowResURL = URL(string: photo.smallImageURL),
@@ -165,6 +155,21 @@ final class SingleImageViewController: UIViewController {
                 }
             }
         }
+    }
+    
+    // MARK: - Error Alert
+    private func showError() {
+        let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
+        
+        alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: { _ in
+            alert.dismiss(animated: true, completion: nil)
+        }))
+        
+        alert.addAction(UIAlertAction(title: "Повторить", style: .default, handler: { [weak self] _ in
+            self?.setSingleImage()
+        }))
+        
+        present(alert, animated: true, completion: nil)
     }
 }
 

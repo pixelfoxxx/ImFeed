@@ -13,18 +13,25 @@ final class ImagesListCell: UITableViewCell {
     weak var delegate: ImagesListCellDelegate?
     
     // MARK: - UI Components
-    private lazy var likeButton = UIButton()
+    private lazy var likeButton: UIButton = {
+        let button = UIButton()
+        button.accessibilityIdentifier = "LikeButton"
+        
+        return button
+    }()
     private var gradientLayer: CAGradientLayer?
     
     private lazy var gradientView: UIView = {
         let view = UIView()
         view.backgroundColor = .clear
+        
         return view
     }()
     
     private var containerView: UIView = {
         let view = UIView()
         view.backgroundColor = .clear
+        
         return view
     }()
     
@@ -34,6 +41,7 @@ final class ImagesListCell: UITableViewCell {
         imageView.layer.cornerRadius = .cornerRadius
         imageView.layer.masksToBounds = true
         imageView.backgroundColor = .clear
+        
         return imageView
     }()
     
@@ -42,6 +50,7 @@ final class ImagesListCell: UITableViewCell {
         label.numberOfLines = 1
         label.textColor = UIColor.ypWhite
         label.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        
         return label
     }()
     

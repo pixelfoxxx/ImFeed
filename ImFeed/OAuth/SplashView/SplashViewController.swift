@@ -38,6 +38,7 @@ final class SplashViewController: UIViewController, UITabBarControllerDelegate {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
+        checkToken()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -114,7 +115,7 @@ final class SplashViewController: UIViewController, UITabBarControllerDelegate {
                 self.switchToTabBarController()
             case .failure(let error):
                 UIBlockingProgressHUD.dismiss()
-                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Ошибка: \(error) ")
+                AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Ошибка: \(error)")
                 break
             }
         }

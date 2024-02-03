@@ -49,6 +49,7 @@ final class ProfileViewController: UIViewController {
         let button = UIButton()
         button.setImage(UIImage(systemName: "ipad.and.arrow.forward"), for: .normal)
         button.tintColor = .ypRed
+        button.accessibilityIdentifier = "logoutButton"
         
         return button
     }()
@@ -229,7 +230,10 @@ final class ProfileViewController: UIViewController {
     // MARK: - Fetching User Profile
     private func fetchUserProfile() {
         addGradientToLabels()
-        guard let token = tokenStorage.token else { return }
+        guard let token = tokenStorage.token else {
+            AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Токен не найден.")
+            return
+        }
         
         profileService.fetchProfile(with: token) { [weak self] result in
             self?.removeGradientsFromLabels()
@@ -238,8 +242,8 @@ final class ProfileViewController: UIViewController {
                 case .success(let profile):
                     self?.updateUIWithProfile(profile)
                     self?.fetchProfileImageURL(for: profile.username)
-                case .failure: break
-                    // TODO: Add error alert
+                case .failure(let error):
+                    AlertPresenter.showAlert(on: self!, title: "Что-то пошло не так 😢", message: "Не удалось загрузить информацию о профиле. Ошибка: \(error)")
                 }
             }
         }
@@ -251,8 +255,8 @@ final class ProfileViewController: UIViewController {
                 switch result {
                 case .success:
                     self?.updateAvatar()
-                case .failure: break
-                    // TODO: Add error alert
+                case .failure(let error):
+                    AlertPresenter.showAlert(on: self!, title: "Что-то пошло не так 😢", message: "Не удалось загрузить изображение профиля. Ошибка: \(error)")
                 }
             }
         }
