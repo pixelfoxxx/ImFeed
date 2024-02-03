@@ -13,6 +13,12 @@ protocol AuthHelperProtocol {
 }
 
 class AuthHelper: AuthHelperProtocol {
+    let configuration: AuthConfiguration
+    
+    init(configuration: AuthConfiguration = .standard) {
+        self.configuration = configuration
+    }
+    
     func code(from url: URL) -> String? {
         if let urlComponents = URLComponents(string: url.absoluteString),
            urlComponents.path == "/oauth/authorize/native",
@@ -39,11 +45,5 @@ class AuthHelper: AuthHelperProtocol {
             URLQueryItem(name: "scope", value: configuration.accessScope)
         ]
         return urlComponents.url!
-    }
-    
-    let configuration: AuthConfiguration
-    
-    init(configuration: AuthConfiguration = .standard) {
-        self.configuration = configuration
     }
 }

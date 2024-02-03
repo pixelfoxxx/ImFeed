@@ -16,6 +16,7 @@ protocol WebViewControllerDelegate: AnyObject {
 
 protocol WebViewProtocol: AnyObject {
     func loadRequest(request: URLRequest)
+    func updateProgress(progress: Float)
 }
 
 // MARK: - WebViewViewController
@@ -84,19 +85,19 @@ final class WebViewViewController: UIViewController {
         delegate?.webViewViewControllerDidCancel(self)
     }
     
-    private func updateProgress() {
-        progressView.progress = Float(webView.estimatedProgress)
-        progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
+    internal func updateProgress(progress: Float) {
+        DispatchQueue.main.async {
+            self.progressView.progress = progress
+            self.progressView.isHidden = progress == 0
+        }
     }
     
     // MARK: - WebView Observer
     private func webViewObserver() {
-        estimatedProgressObservation = webView.observe(
-            \.estimatedProgress,
-             options: [],
-             changeHandler: { [weak self] _, _ in
-                 guard let self = self else { return }
-                 self.updateProgress()})
+        estimatedProgressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
+            guard let self = self, let newProgress = change.newValue else { return }
+            self.presenter?.updateProgress(progress: Float(newProgress))
+        }
     }
 }
 

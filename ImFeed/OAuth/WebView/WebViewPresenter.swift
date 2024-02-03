@@ -38,4 +38,9 @@ final class WebViewPresenter: WebViewPresenterProtocol {
         }
         return authHelper.code(from: url)
     }
+    
+    func updateProgress(progress: Float) {
+        let isProgressComplete = progress >= 1.0
+        view?.updateProgress(progress: isProgressComplete ? 0: progress)
+    }
 }
