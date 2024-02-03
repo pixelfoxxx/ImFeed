@@ -130,7 +130,7 @@ extension ImagesListViewController: ImagesListCellDelegate {
                 case .failure(let error):
                     UIBlockingProgressHUD.dismiss()
                     
-                    let alert = UIAlertController(title: "Ошибка", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
+                    let alert = UIAlertController(title: "Ошибка: \(error)", message: "Что-то пошло не так. Попробовать ещё раз?", preferredStyle: .alert)
                     
                     alert.addAction(UIAlertAction(title: "Не надо", style: .cancel, handler: nil))
                     

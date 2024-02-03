@@ -31,7 +31,8 @@ final class WebViewViewController: UIViewController {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        presenter = WebViewPresenter(view: self)
+        let authHelper = AuthHelper(configuration: .standard)
+        presenter = WebViewPresenter(view: self, authHelper: authHelper)
         setupView()
         presenter?.loadWebView()
         webViewObserver()

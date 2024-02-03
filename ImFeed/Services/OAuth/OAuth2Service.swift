@@ -11,6 +11,7 @@ import Foundation
 final class OAuth2Service {
     // MARK: - Constants
     private let tokenStorage = OAuth2TokenStorage.shared
+    private let authConfig = AuthConfiguration.standard
     
     // MARK: - Public Methods
     func fetchAuthToken(with code: String, completion: @escaping (Result<String, Error>) -> Void) {
@@ -38,9 +39,9 @@ final class OAuth2Service {
     private func buildRequestURL(with code: String) -> URL? {
         var urlComponents = URLComponents(string: "https://unsplash.com/oauth/token")
         urlComponents?.queryItems = [
-            URLQueryItem(name: "client_id", value: WebConstants.accessKey),
-            URLQueryItem(name: "client_secret", value: WebConstants.secretKey),
-            URLQueryItem(name: "redirect_uri", value: WebConstants.redirectURI),
+            URLQueryItem(name: "client_id", value: authConfig.accessKey),
+            URLQueryItem(name: "client_secret", value: authConfig.secretKey),
+            URLQueryItem(name: "redirect_uri", value: authConfig.redirectURI),
             URLQueryItem(name: "code", value: code),
             URLQueryItem(name: "grant_type", value: "authorization_code")
         ]

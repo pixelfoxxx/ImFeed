@@ -15,6 +15,7 @@ final class SplashViewController: UIViewController {
     private let profileService = ProfileService()
     private let tokenStorage = OAuth2TokenStorage.shared
     private let profileImageService = ProfileImageService.shared
+    private let authConfiguration = AuthConfiguration.standard
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
         .lightContent
@@ -73,7 +74,7 @@ final class SplashViewController: UIViewController {
     }
     
     private func showAuthScreen() {
-        let authViewController = AuthViewController(delegate: self)
+        let authViewController = AuthViewController(delegate: self, authConfiguration: authConfiguration)
         authViewController.delegate = self
         authViewController.modalPresentationStyle = .fullScreen
         present(authViewController, animated: true, completion: nil)

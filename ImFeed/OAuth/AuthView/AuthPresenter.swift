@@ -18,10 +18,12 @@ final class AuthPresenter {
     
     // MARK: - Properties
     weak var view: AuthViewProtocol?
+    private var authConfiguration: AuthConfiguration
     
     // MARK: - Initialisation
-    init(view: AuthViewProtocol) {
+    init(view: AuthViewProtocol, authConfiguration: AuthConfiguration) {
         self.view = view
+        self.authConfiguration = authConfiguration
     }
     
     // MARK: - Private Methods
@@ -44,9 +46,15 @@ final class AuthPresenter {
 extension AuthPresenter: AuthPresenterProtocol {
     func signIn() {
         let webViewController = WebViewViewController()
+        let authHelper = AuthHelper(configuration: authConfiguration)
+        let webViewPresenter = WebViewPresenter(view: webViewController, authHelper: authHelper)
+        
+        webViewController.presenter = webViewPresenter
         webViewController.delegate = view as? WebViewControllerDelegate
+        
         let navigationController = UINavigationController(rootViewController: webViewController)
         navigationController.modalPresentationStyle = .fullScreen
+        
         view?.present(navigationController, animated: true)
     }
     
