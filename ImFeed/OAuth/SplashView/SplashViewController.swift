@@ -38,7 +38,6 @@ final class SplashViewController: UIViewController, UITabBarControllerDelegate {
         super.viewDidLoad()
         configureSubviews()
         configureConstraints()
-        checkToken()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -68,8 +67,12 @@ final class SplashViewController: UIViewController, UITabBarControllerDelegate {
     private func switchToTabBarController() {
         let tabBarViewController = TabBarViewController()
         tabBarViewController.delegate = self
-        tabBarViewController.modalPresentationStyle = .fullScreen
-        present(tabBarViewController, animated: true, completion: nil)
+        
+        if let window = UIApplication.shared.windows.first {
+            window.rootViewController = tabBarViewController
+            window.makeKeyAndVisible()
+            UIView.transition(with: window, duration: 0.3, options: .transitionCrossDissolve, animations: {}, completion: nil)
+        }
     }
     
     private func showAuthScreen() {
