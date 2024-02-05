@@ -1,6 +1,17 @@
+//
+//  ProfileViewController.swift
+//  ImFeed
+//
+//  Created by Юрий Клеймёнов on 05/02/2024.
+//
+
 import UIKit
 import Kingfisher
-import WebKit
+
+protocol ProfileViewControllerProtocol: AnyObject {
+    var presenter: ProfilePresenterProtocol? { get set }
+    
+}
 
 final class ProfileViewController: UIViewController {
     
@@ -264,45 +275,23 @@ final class ProfileViewController: UIViewController {
     
     // MARK: - Profile logout
     @objc private func logoutButtonTapped() {
-        presentLogoutConfirmation()
-    }
-    
-    private func presentLogoutConfirmation() {
-        let alertController = UIAlertController(title: "Пока, пока!", message: "Уверены, что хотите выйти? 😢", preferredStyle: .alert)
-        let yesAction = UIAlertAction(title: "Да", style: .default) { [weak self] _ in
-            self?.logout()
-        }
-        
-        let noAction = UIAlertAction(title: "Нет", style: .cancel)
-        
-        alertController.addAction(yesAction)
-        alertController.addAction(noAction)
-        
-        present(alertController, animated: true)
+        AlertPresenter.showConfirmationAlert(
+            on: self,
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти? 😢",
+            yesActionTitle: "Да",
+            noActionTitle: "Нет",
+            yesAction: { [weak self] in
+                self?.logout()
+            }
+        )
     }
     
     private func logout() {
+        CacheCleaner.clean()
+        CacheCleaner.cleanCache()
         tokenStorage.clearToken()
-        cleanCookiesAndData()
-        navigateToInitialScreen()
-    }
-    
-    private func cleanCookiesAndData() {
-        HTTPCookieStorage.shared.removeCookies(since: Date.distantPast)
-        
-        WKWebsiteDataStore.default().fetchDataRecords(ofTypes: WKWebsiteDataStore.allWebsiteDataTypes()) { records in
-            records.forEach { record in
-                WKWebsiteDataStore.default().removeData(ofTypes: record.dataTypes, for: [record], completionHandler: {})
-            }
-        }
-    }
-    
-    private func navigateToInitialScreen() {
-        DispatchQueue.main.async {
-            if let sceneDelegate = UIApplication.shared.connectedScenes.first?.delegate as? SceneDelegate {
-                sceneDelegate.switchToInitialViewController()
-            }
-        }
+        NavigationManager.shared.navigateToInitialScreen()
     }
     
     // MARK: - Notification Center Observer
