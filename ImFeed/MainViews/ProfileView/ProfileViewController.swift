@@ -10,20 +10,16 @@ import Kingfisher
 
 protocol ProfileViewControllerProtocol: AnyObject {
     var presenter: ProfilePresenterProtocol? { get set }
-    
+    func updateAvatar(url: URL)
+    func updateUIWithProfile(_ profile: Profile)
+    func addGradientToLabels()
+    func removeGradientsFromLabels()
+    func showError(title: String, message: String)
 }
 
-final class ProfileViewController: UIViewController {
+final class ProfileViewController: UIViewController, ProfileViewControllerProtocol {
     
-    private let profileService = ProfileService.shared
-    private let tokenStorage = OAuth2TokenStorage.shared
-    private let profileImageService = ProfileImageService.shared
-    private var profileImageServiceObserver: NSObjectProtocol?
-    
-    private var animationLayers = Set<CALayer>()
-    private var gradientLayer: CAGradientLayer?
-    
-    // MARK: - Properties
+    // MARK: - UI Components
     let userNameLabel: UILabel = {
         let label = UILabel()
         label.textColor = .ypWhite
@@ -65,11 +61,19 @@ final class ProfileViewController: UIViewController {
         return button
     }()
     
+    
+    private var profileImageServiceObserver: NSObjectProtocol?
+    private var animationLayers = Set<CALayer>()
+    private var gradientLayer: CAGradientLayer?
+    
+    var presenter: ProfilePresenterProtocol?
+    
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         setupView()
-        fetchUserProfile()
+        presenter = ProfilePresenter(view: self)
+        presenter?.fetchUserProfile()
         addProfileImageObserver()
     }
     
@@ -78,19 +82,21 @@ final class ProfileViewController: UIViewController {
         setGradientFrames()
     }
     
-    // MARK: - Private methods
-    private func setupView(){
-        configureSubviews()
-        configureConstraints()
-        addGradientLayer()
-        addGradientToLabels()
+    // MARK: - Public Methods
+    func addGradientToLabels() {
+        [userNameLabel, userLoginLabel, descriptionLabel].forEach { label in
+            let gradient = createGradientLayer()
+            label.layer.insertSublayer(gradient, at: 0)
+            animationLayers.insert(gradient)
+        }
     }
     
-    private func updateAvatar() {
-        guard
-            let profileImageURL = profileImageService.avatarURL,
-            let url = URL(string: profileImageURL)
-        else { return }
+    func removeGradientsFromLabels() {
+        animationLayers.forEach { $0.removeFromSuperlayer() }
+        animationLayers.removeAll()
+    }
+    
+    func updateAvatar(url: URL) {
         avatarImageView.kf.setImage(with: url) { [weak self] result in
             switch result {
             case .success(_):
@@ -101,11 +107,46 @@ final class ProfileViewController: UIViewController {
         }
     }
     
-    // MARK: - UI Methods
-    private func updateUIWithProfile(_ profile: Profile) {
+    func updateUIWithProfile(_ profile: Profile) {
         userNameLabel.text = profile.name
         userLoginLabel.text = profile.loginName
         descriptionLabel.text = profile.bio
+    }
+    
+    func showError(title: String, message: String) {
+        DispatchQueue.main.async {
+            let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default))
+            self.present(alert, animated: true)
+        }
+    }
+    
+    // MARK: - Private methods
+    private func setupView(){
+        configureSubviews()
+        configureConstraints()
+        addGradientLayer()
+        addGradientToLabels()
+    }
+    
+    private func logout() {
+        CacheCleaner.clean()
+        CacheCleaner.cleanCache()
+        OAuth2TokenStorage.shared.clearToken()
+        NavigationManager.shared.navigateToInitialScreen()
+    }
+    
+    @objc private func logoutButtonTapped() {
+        AlertPresenter.showConfirmationAlert(
+            on: self,
+            title: "Пока, пока!",
+            message: "Уверены, что хотите выйти? 😢",
+            yesActionTitle: "Да",
+            noActionTitle: "Нет",
+            yesAction: { [weak self] in
+                self?.logout()
+            }
+        )
     }
     
     private func configureSubviews() {
@@ -186,22 +227,9 @@ final class ProfileViewController: UIViewController {
         avatarImageView.layer.insertSublayer(gradient, at: 0)
     }
     
-    private func addGradientToLabels() {
-        [userNameLabel, userLoginLabel, descriptionLabel].forEach { label in
-            let gradient = createGradientLayer()
-            label.layer.insertSublayer(gradient, at: 0)
-            animationLayers.insert(gradient)
-        }
-    }
-    
     private func removeGradientLayer() {
         gradientLayer?.removeFromSuperlayer()
         gradientLayer = nil
-    }
-    
-    private func removeGradientsFromLabels() {
-        animationLayers.forEach { $0.removeFromSuperlayer() }
-        animationLayers.removeAll()
     }
     
     private func createGradientLayer() -> CAGradientLayer {
@@ -238,62 +266,6 @@ final class ProfileViewController: UIViewController {
         }
     }
     
-    // MARK: - Fetching User Profile
-    private func fetchUserProfile() {
-        addGradientToLabels()
-        guard let token = tokenStorage.token else {
-            AlertPresenter.showAlert(on: self, title: "Что-то пошло не так 😢", message: "Токен не найден.")
-            return
-        }
-        
-        profileService.fetchProfile(with: token) { [weak self] result in
-            self?.removeGradientsFromLabels()
-            DispatchQueue.main.async {
-                switch result {
-                case .success(let profile):
-                    self?.updateUIWithProfile(profile)
-                    self?.fetchProfileImageURL(for: profile.username)
-                case .failure(let error):
-                    AlertPresenter.showAlert(on: self!, title: "Что-то пошло не так 😢", message: "Не удалось загрузить информацию о профиле. Ошибка: \(error)")
-                }
-            }
-        }
-    }
-    
-    private func fetchProfileImageURL(for username: String) {
-        profileImageService.fetchProfileImageURL(username: username) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self?.updateAvatar()
-                case .failure(let error):
-                    AlertPresenter.showAlert(on: self!, title: "Что-то пошло не так 😢", message: "Не удалось загрузить изображение профиля. Ошибка: \(error)")
-                }
-            }
-        }
-    }
-    
-    // MARK: - Profile logout
-    @objc private func logoutButtonTapped() {
-        AlertPresenter.showConfirmationAlert(
-            on: self,
-            title: "Пока, пока!",
-            message: "Уверены, что хотите выйти? 😢",
-            yesActionTitle: "Да",
-            noActionTitle: "Нет",
-            yesAction: { [weak self] in
-                self?.logout()
-            }
-        )
-    }
-    
-    private func logout() {
-        CacheCleaner.clean()
-        CacheCleaner.cleanCache()
-        tokenStorage.clearToken()
-        NavigationManager.shared.navigateToInitialScreen()
-    }
-    
     // MARK: - Notification Center Observer
     private func addProfileImageObserver() {
         profileImageServiceObserver = NotificationCenter.default
@@ -303,7 +275,7 @@ final class ProfileViewController: UIViewController {
                 queue: .main
             ) { [weak self] _ in
                 guard let self = self else { return }
-                self.updateAvatar()
+                self.presenter?.updateAvatar()
             }
     }
     
