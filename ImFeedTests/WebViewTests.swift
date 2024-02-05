@@ -9,14 +9,7 @@ import XCTest
 @testable import ImFeed
 
 final class WebViewTests: XCTestCase {
-    override func setUpWithError() throws {
-        
-    }
-    
-    override func tearDownWithError() throws {
-        
-    }
-    
+
     // MARK: - Test loadWebView() call
     func testViewControllerCallsLoadWebView() {
         // Given
