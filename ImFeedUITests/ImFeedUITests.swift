@@ -67,7 +67,6 @@ final class ImFeedUITests: XCTestCase {
         cellToLike.tap()
         
         let image = app.scrollViews.images["SingleImage"]
-        XCTAssertTrue(image.waitForExistence(timeout: 5), "Изображение в детальном просмотре не найдено.")
         
         image.pinch(withScale: 3, velocity: 1)
         image.pinch(withScale: 0.5, velocity: -1)

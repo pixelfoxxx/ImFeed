@@ -14,9 +14,8 @@ final class SingleImageViewController: UIViewController {
     
     private let imageView: UIImageView = {
         let photoView = UIImageView()
-        photoView.restorationIdentifier = "SingleImage"
         photoView.contentMode = .scaleAspectFill
-        
+      
         return photoView
     }()
     
@@ -39,13 +38,14 @@ final class SingleImageViewController: UIViewController {
         view.addSubview(imageView)
         view.addSubview(sharedButton)
         view.backgroundColor = .ypBlack
-        sharedButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
         setImageZoomScale()
         setupSharingButton()
         setupNavigationBar()
         setupScrollView()
         setSingleImage()
         setupImage()
+        sharedButton.addTarget(self, action: #selector(shareButtonTapped), for: .touchUpInside)
+        scrollView.addSubview(imageView)
     }
     
     @objc private func shareButtonTapped() {
@@ -74,6 +74,7 @@ final class SingleImageViewController: UIViewController {
     
     private func setupImage() {
         imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.accessibilityIdentifier = "SingleImage"
         
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: scrollView.topAnchor),

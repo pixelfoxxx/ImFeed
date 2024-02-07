@@ -28,7 +28,9 @@ final class WebViewPresenter: WebViewPresenterProtocol {
     
     // MARK: - Public methods
     func loadWebView() {
-        let request = authHelper.authRequest()
+        guard let request = authHelper.authRequest() else {
+            return
+        }
         view?.loadRequest(request: request)
     }
     
