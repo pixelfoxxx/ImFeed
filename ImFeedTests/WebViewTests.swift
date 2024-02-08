@@ -64,7 +64,10 @@ final class WebViewTests: XCTestCase {
         let authHelper = AuthHelper(configuration: configuration)
         
         // When
-        let url = authHelper.authURL()
+        guard let url = authHelper.authURL() else {
+            XCTFail("URL is nil")
+            return
+        }
         let urlString = url.absoluteString
         
         // Then
