@@ -8,31 +8,41 @@
 import UIKit
 import WebKit
 
+// MARK: - Protocols
 protocol WebViewControllerDelegate: AnyObject {
     func webViewViewController(_ vc: WebViewViewController, didAuthenticateWithCode code: String)
     func webViewViewControllerDidCancel(_ vc: WebViewViewController)
 }
 
+protocol WebViewProtocol: AnyObject {
+    func loadRequest(request: URLRequest)
+    func updateProgress(progress: Float)
+}
+
+// MARK: - WebViewViewController
 final class WebViewViewController: UIViewController {
     // MARK: - Properties
     weak var delegate: WebViewControllerDelegate?
+    var presenter: WebViewPresenter?
+    
+    private var progressView = UIProgressView()
     private var estimatedProgressObservation: NSKeyValueObservation?
     
-    private var webView = WKWebView()
-    private var progressView = UIProgressView()
+    private lazy var webView: WKWebView = {
+        let webView = WKWebView()
+        webView.accessibilityIdentifier = "UnsplashWebView"
+        return webView
+    }()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        let authHelper = AuthHelper(configuration: .standard)
+        presenter = WebViewPresenter(view: self, authHelper: authHelper)
         setupView()
-        loadWebView()
+        presenter?.loadWebView()
         webViewObserver()
         webView.navigationDelegate = self
-    }
-    
-    // MARK: - Navigation Methods
-    @objc private func backwardButtonTapped() {
-        delegate?.webViewViewControllerDidCancel(self)
     }
     
     // MARK: - UI Methods
@@ -42,21 +52,6 @@ final class WebViewViewController: UIViewController {
         setupWebViewConstraints()
         setupProgressView()
         configureNavBar()
-    }
-    
-    private func configureNavBar() {
-        if let backButtonImage = UIImage(named: "backward_nav_button")?.withRenderingMode(.alwaysOriginal) {
-            let backButton = UIBarButtonItem(image: backButtonImage,
-                                             style: .plain,
-                                             target: self,
-                                             action: #selector(backwardButtonTapped))
-            navigationItem.leftBarButtonItem = backButton
-        }
-    }
-    
-    private func updateProgress() {
-        progressView.progress = Float(webView.estimatedProgress)
-        progressView.isHidden = fabs(webView.estimatedProgress - 1.0) <= 0.0001
     }
     
     private func setupProgressView() {
@@ -80,28 +75,34 @@ final class WebViewViewController: UIViewController {
             webView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
     }
-    // MARK: - Private Methods
-    private func webViewObserver() {
-        estimatedProgressObservation = webView.observe(
-            \.estimatedProgress,
-             options: [],
-             changeHandler: { [weak self] _, _ in
-                 guard let self = self else { return }
-                 self.updateProgress()
-             })
+    
+    private func configureNavBar() {
+        if let backButtonImage = UIImage(named: "backward_nav_button")?.withRenderingMode(.alwaysOriginal) {
+            let backButton = UIBarButtonItem(image: backButtonImage,
+                                             style: .plain,
+                                             target: self,
+                                             action: #selector(backwardButtonTapped))
+            navigationItem.leftBarButtonItem = backButton
+        }
     }
     
-    private func loadWebView() {
-        var urlComponents = URLComponents(string: WebConstants.unsplashAuthorizeURL)!
-        urlComponents.queryItems = [
-            URLQueryItem(name: "client_id", value: WebConstants.accessKey),
-            URLQueryItem(name: "redirect_uri", value: WebConstants.redirectURI),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "scope", value: WebConstants.accessScope)
-        ]
-        let url = urlComponents.url!
-        let request = URLRequest(url: url)
-        webView.load(request)
+    @objc private func backwardButtonTapped() {
+        delegate?.webViewViewControllerDidCancel(self)
+    }
+    
+    internal func updateProgress(progress: Float) {
+        DispatchQueue.main.async {
+            self.progressView.progress = progress
+            self.progressView.isHidden = progress == 0
+        }
+    }
+    
+    // MARK: - WebView Observer
+    private func webViewObserver() {
+        estimatedProgressObservation = webView.observe(\.estimatedProgress, options: [.new]) { [weak self] _, change in
+            guard let self = self, let newProgress = change.newValue else { return }
+            self.presenter?.updateProgress(progress: Float(newProgress))
+        }
     }
 }
 
@@ -112,26 +113,18 @@ extension WebViewViewController: WKNavigationDelegate {
         decidePolicyFor navigationAction: WKNavigationAction,
         decisionHandler: @escaping (WKNavigationActionPolicy) -> Void
     ) {
-        
-        if let code = fetchCode(from: navigationAction) {
+        if let code = presenter?.fetchCode(from: navigationAction) {
             delegate?.webViewViewController(self, didAuthenticateWithCode: code)
             decisionHandler(.cancel)
         } else {
             decisionHandler(.allow)
         }
     }
-    
-    private func fetchCode(from navigationAction: WKNavigationAction) -> String? {
-        if
-            let url = navigationAction.request.url,
-            let urlComponents = URLComponents(string: url.absoluteString),
-            urlComponents.path == WebConstants.authorizedPath,
-            let items = urlComponents.queryItems,
-            let codeItem = items.first(where: { $0.name == "code"})
-        {
-            return codeItem.value
-        } else {
-            return nil
-        }
+}
+
+// MARK: - WebViewProtocol
+extension WebViewViewController: WebViewProtocol {
+    func loadRequest(request: URLRequest) {
+        webView.load(request)
     }
 }
